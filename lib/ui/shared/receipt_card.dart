@@ -35,10 +35,10 @@ class ReceiptCard extends StatelessWidget {
         children: [
           // Receipt Top Header
           Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            decoration: const BoxDecoration(
               color: AppColors.gray,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,32 +46,39 @@ class ReceiptCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary,
-                            borderRadius: BorderRadius.circular(6),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Icon(
+                              Icons.receipt_long,
+                              color: Colors.white,
+                              size: 16,
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.receipt_long,
-                            color: Colors.white,
-                            size: 18,
+                          const SizedBox(width: 8),
+                          const Flexible(
+                            child: Text(
+                              'PAYROLL ADVICE',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'PAYROLL ADVICE RECEIPT',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.0,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
@@ -89,31 +96,39 @@ class ReceiptCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          payslip.employeeName,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            payslip.employeeName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        Text(
-                          '${payslip.department} • ${payslip.employeeId}',
-                          style: TextStyle(
-                            color: Colors.white.withAlpha(200),
-                            fontSize: 12,
+                          const SizedBox(height: 2),
+                          Text(
+                            '${payslip.department} • ${payslip.employeeId}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.white.withAlpha(200),
+                              fontSize: 11,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+                    const SizedBox(width: 8),
                     Text(
                       'Ref: ${payslip.paymentReference.split('-').last}',
                       style: TextStyle(
@@ -133,7 +148,7 @@ class ReceiptCard extends StatelessWidget {
 
           // Receipt Body Items
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -142,9 +157,9 @@ class ReceiptCard extends StatelessWidget {
                 _receiptRow('Payment Date', payslip.payoutDateStr),
                 const SizedBox(height: 6),
                 _receiptRow('Transaction ID', payslip.paymentReference),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
                 const Divider(height: 1, color: AppColors.grayBorder),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
 
                 // Financial Summary Rows
                 _receiptRow(
@@ -164,49 +179,55 @@ class ReceiptCard extends StatelessWidget {
                   '+${AppFormatters.currency(payslip.irregularAdjustment)}',
                   textColor: AppColors.primary,
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
 
                 // Dotted receipt line
                 _buildDottedLine(),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
 
                 // Total Net Pay Banner
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'NET TAKE-HOME PAY',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.8,
-                            color: AppColors.gray,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'NET TAKE-HOME PAY',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.8,
+                              color: AppColors.gray,
+                            ),
                           ),
-                        ),
-                        Text(
-                          'Direct Deposit to Payroll Account',
-                          style: theme.textTheme.bodySmall?.copyWith(fontSize: 10),
-                        ),
-                      ],
+                          Text(
+                            'Direct Deposit (PHP)',
+                            style: theme.textTheme.bodySmall?.copyWith(fontSize: 10),
+                          ),
+                        ],
+                      ),
                     ),
-                    Text(
-                      AppFormatters.currency(payslip.netPay),
-                      style: const TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                    const SizedBox(width: 8),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        AppFormatters.currency(payslip.netPay),
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
 
                 // Simulated Barcode & Security stamp
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: AppColors.surfaceLight,
                     borderRadius: BorderRadius.circular(8),
@@ -217,22 +238,24 @@ class ReceiptCard extends StatelessWidget {
                       // Simulated vertical barcode bars
                       Row(
                         children: List.generate(
-                          18,
+                          10,
                           (i) => Container(
                             margin: const EdgeInsets.symmetric(horizontal: 1.5),
                             width: (i % 3 == 0) ? 3 : ((i % 2 == 0) ? 2 : 1),
-                            height: 28,
+                            height: 24,
                             color: AppColors.gray,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 14),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
                               'VERIFIED DIGITAL STATEMENT',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
@@ -240,7 +263,9 @@ class ReceiptCard extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              'Encrypted hash authentication verified',
+                              'Hash authentication verified',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 9,
                                 color: AppColors.grayLight,
@@ -249,12 +274,13 @@ class ReceiptCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      const Icon(Icons.verified, color: AppColors.primary, size: 20),
+                      const SizedBox(width: 6),
+                      const Icon(Icons.verified, color: AppColors.primary, size: 18),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 FilledButton.icon(
                   onPressed: onDownloadPdf,
                   icon: const Icon(Icons.file_download_outlined),
@@ -281,7 +307,7 @@ class ReceiptCard extends StatelessWidget {
           child: Text(
             label,
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 12,
               color: isBold ? AppColors.mainBlack : AppColors.grayLight,
               fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
             ),
@@ -291,7 +317,7 @@ class ReceiptCard extends StatelessWidget {
         Text(
           value,
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 12,
             color: textColor ?? (isBold ? AppColors.mainBlack : AppColors.gray),
             fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
           ),

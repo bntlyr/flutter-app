@@ -16,7 +16,7 @@ class AppFormatters {
       buffer.write(integerPart[i]);
     }
 
-    final formatted = '\$${buffer.toString()}.$decimalPart';
+    final formatted = '₱${buffer.toString()}.$decimalPart';
     return isNegative ? '-$formatted' : formatted;
   }
 

@@ -57,7 +57,7 @@ void main() {
     expect(find.text('Gross Compensation'), findsAtLeastNWidgets(1));
     expect(find.text('Total Deductions'), findsOneWidget);
     expect(find.text('Irregular Adjustment'), findsAtLeastNWidgets(1));
-    expect(find.text('PAYROLL ADVICE RECEIPT'), findsOneWidget);
+    expect(find.text('PAYROLL ADVICE'), findsOneWidget);
     expect(find.text('Payroll Breakdown Details'), findsOneWidget);
 
     // Toggle Table view in Payslip breakdown

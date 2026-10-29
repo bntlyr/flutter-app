@@ -129,6 +129,13 @@ All widgets, screens, and features in this application must strictly adhere to t
 ### 3. Scroll Physics Standard
 - To prevent Android 12+ elastic overscroll distortion from warping component cards, always maintain `overscroll: false` and `BouncingScrollPhysics()` on `MaterialApp.scrollBehavior` and scrollable containers.
 
+### 4. Domain & Terminology Invariants
+- **No "Premium" Tiers or Badges**: In this organization, all request workflows, rest-day duties, overtime compensation, and portal capabilities are standard and fully accessible. Never display "Premium", "Tier", or paywall-style tags in UI badges, models, or descriptions.
+
+### 5. Mobile Data Presentation & Overflow Guardrails
+- **Mobile-First Table Presentation**: Avoid relying solely on wide, horizontal-scrolling `DataTable`s for primary mobile views. Default to structured, high-visibility card lists with clear key-value pairs, reserving raw `DataTable`s for landscape mode or explicit table view toggles.
+- **RenderFlex Overflow Prevention**: Any variable-length text (titles, descriptions, user names) placed inside a `Row` alongside icons, badges, or trailing actions must be wrapped in `Expanded` or `Flexible` with `overflow: TextOverflow.ellipsis` to prevent edge rendering overflow on compact mobile viewports.
+
 ---
 
 ## Android Toolchain Runbook

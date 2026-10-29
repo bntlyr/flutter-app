@@ -342,12 +342,15 @@ class _PayslipScreenState extends State<PayslipScreen> {
                               ),
                             ),
                             const SizedBox(width: 10),
-                            Text(
-                              '${item.isDeduction ? "-" : "+"}${AppFormatters.currency(item.employeeAmount)}',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                                color: color,
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                '${item.isDeduction ? "-" : "+"}${AppFormatters.currency(item.employeeAmount)}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: color,
+                                ),
                               ),
                             ),
                           ],
@@ -363,7 +366,10 @@ class _PayslipScreenState extends State<PayslipScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('Employer Counterpart Share:', style: TextStyle(fontSize: 11, color: AppColors.grayLight)),
+                                const Expanded(
+                                  child: Text('Employer Counterpart Share:', style: TextStyle(fontSize: 11, color: AppColors.grayLight)),
+                                ),
+                                const SizedBox(width: 8),
                                 Text(
                                   AppFormatters.currency(item.employerShare),
                                   style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.gray),

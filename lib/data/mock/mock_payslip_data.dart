@@ -48,13 +48,13 @@ class MockPayslipData {
         PayrollCategory.basicPayCompensation: [
           const PayrollLineItem(
             description: 'Regular Basic Pay',
-            basis: '11 Days Worked @ \$320.00/day',
+            basis: '11 Days Worked @ ₱320.00/day',
             employerShare: 0.0,
             employeeAmount: 3520.00,
           ),
           const PayrollLineItem(
             description: 'Overtime Pay (Regular Working Days)',
-            basis: '4.5 hrs @ \$25.00/hr (125% rate)',
+            basis: '4.5 hrs @ ₱25.00/hr (125% rate)',
             employerShare: 0.0,
             employeeAmount: 140.63,
           ),
@@ -108,7 +108,7 @@ class MockPayslipData {
           ),
           const PayrollLineItem(
             description: 'Tardiness Salary Deduction',
-            basis: '14 minutes late @ \$0.66/min',
+            basis: '14 minutes late @ ₱0.66/min',
             employerShare: 0.0,
             employeeAmount: 9.24,
             isDeduction: true,

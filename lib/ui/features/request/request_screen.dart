@@ -17,8 +17,69 @@ class RequestScreen extends StatefulWidget {
   State<RequestScreen> createState() => _RequestScreenState();
 }
 
+class _RequestCategoryItem {
+  final RequestType type;
+  final String title;
+  final String subtitle;
+  final String badge;
+  final Color accentColor;
+
+  const _RequestCategoryItem({
+    required this.type,
+    required this.title,
+    required this.subtitle,
+    required this.badge,
+    required this.accentColor,
+  });
+}
+
 class _RequestScreenState extends State<RequestScreen> {
   late DateTime _filingDate;
+
+  static const List<_RequestCategoryItem> _categories = [
+    _RequestCategoryItem(
+      type: RequestType.leave,
+      title: 'Leave Application',
+      subtitle: 'Vacation, Sick, Emergency, Bereavement',
+      badge: '14.5 days credit',
+      accentColor: AppColors.primary,
+    ),
+    _RequestCategoryItem(
+      type: RequestType.timelogsCorrection,
+      title: 'Timelogs Correction',
+      subtitle: 'Missed time-in/out or punch fix',
+      badge: 'Punches & Logs',
+      accentColor: Colors.orange,
+    ),
+    _RequestCategoryItem(
+      type: RequestType.allowance,
+      title: 'Allowance & Reimbursement',
+      subtitle: 'Project travel, onsite meals, claims',
+      badge: 'Expense Claim',
+      accentColor: Colors.teal,
+    ),
+    _RequestCategoryItem(
+      type: RequestType.overtime,
+      title: 'Overtime (OT) Request',
+      subtitle: 'Pre-approval & hours beyond shift',
+      badge: 'OT Compensation',
+      accentColor: Colors.blue,
+    ),
+    _RequestCategoryItem(
+      type: RequestType.dayOffWork,
+      title: 'Day Off Work',
+      subtitle: 'Rest day duty & legal holiday work',
+      badge: 'Available',
+      accentColor: Colors.indigo,
+    ),
+    _RequestCategoryItem(
+      type: RequestType.reshift,
+      title: 'Reshift / Shift Swap',
+      subtitle: 'Schedule change & shift adjustment',
+      badge: 'Schedule Roster',
+      accentColor: Colors.deepPurple,
+    ),
+  ];
 
   @override
   void initState() {
@@ -68,18 +129,18 @@ class _RequestScreenState extends State<RequestScreen> {
           Card(
             color: AppColors.gray,
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(9),
                     decoration: BoxDecoration(
                       color: primary,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(Icons.edit_calendar, color: Colors.white, size: 22),
+                    child: const Icon(Icons.edit_calendar, color: Colors.white, size: 20),
                   ),
-                  const SizedBox(width: 14),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,13 +159,15 @@ class _RequestScreenState extends State<RequestScreen> {
                           '${AppFormatters.dateWithDay(_filingDate)} • ${AppFormatters.time(_filingDate)}',
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 14,
+                            fontSize: 13.5,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           'Filer: Alex Morgan (#84920) • Dept: Software Engineering',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(color: Colors.white.withAlpha(180), fontSize: 11),
                         ),
                       ],
@@ -114,144 +177,104 @@ class _RequestScreenState extends State<RequestScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
 
           const SectionHeader(
             title: 'Select Request Category',
             subtitle: 'Choose the adjustment or benefit workflow to file',
+            padding: EdgeInsets.only(top: 12, bottom: 10),
           ),
 
-          // Request Categories Grid
-          _buildRequestOptionCard(
-            type: RequestType.leave,
-            title: 'Leave Application',
-            subtitle: 'Vacation, Sick, Emergency, Bereavement, or Parental leave',
-            badge: '14.5 days credit',
-            accentColor: AppColors.primary,
+          // Request Categories 2-Column Grid
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final crossAxisCount = constraints.maxWidth >= 600 ? 3 : 2;
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _categories.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 10,
+                  mainAxisExtent: 146,
+                ),
+                itemBuilder: (context, index) => _buildRequestOptionCard(_categories[index]),
+              );
+            },
           ),
-          const SizedBox(height: 10),
-
-          _buildRequestOptionCard(
-            type: RequestType.timelogsCorrection,
-            title: 'Timelogs Correction',
-            subtitle: 'Adjust missed time-in, missed time-out, or biometric terminal glitches',
-            badge: 'Punches & Logs',
-            accentColor: Colors.orange,
-          ),
-          const SizedBox(height: 10),
-
-          _buildRequestOptionCard(
-            type: RequestType.allowance,
-            title: 'Allowance & Reimbursement',
-            subtitle: 'File claims for project travel, onsite meals, or client per diem',
-            badge: 'Expense Claim',
-            accentColor: Colors.teal,
-          ),
-          const SizedBox(height: 10),
-
-          _buildRequestOptionCard(
-            type: RequestType.overtime,
-            title: 'Overtime (OT) Request',
-            subtitle: 'Pre-approval and actual hours worked beyond standard shift',
-            badge: 'OT Compensation',
-            accentColor: Colors.blue,
-          ),
-          const SizedBox(height: 10),
-
-          _buildRequestOptionCard(
-            type: RequestType.dayOffWork,
-            title: 'Day Off Work',
-            subtitle: 'Authorization to work on scheduled rest days or legal holidays',
-            badge: 'Available',
-            accentColor: Colors.indigo,
-          ),
-          const SizedBox(height: 10),
-
-          _buildRequestOptionCard(
-            type: RequestType.reshift,
-            title: 'Reshift / Shift Swap',
-            subtitle: 'Temporary or permanent schedule change & shift adjustment',
-            badge: 'Schedule Roster',
-            accentColor: Colors.deepPurple,
-          ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
         ],
       ),
     );
   }
 
-  Widget _buildRequestOptionCard({
-    required RequestType type,
-    required String title,
-    required String subtitle,
-    required String badge,
-    required Color accentColor,
-  }) {
+  Widget _buildRequestOptionCard(_RequestCategoryItem item) {
     return Card(
+      margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => _openRequestForm(type),
+        onTap: () => _openRequestForm(item.type),
         child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: accentColor.withAlpha(25),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(type.icon, color: accentColor, size: 24),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: accentColor.withAlpha(20),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            badge,
-                            style: TextStyle(
-                              color: accentColor,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: item.accentColor.withAlpha(25),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subtitle,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.grayLight,
+                    child: Icon(item.type.icon, color: item.accentColor, size: 20),
+                  ),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: item.accentColor.withAlpha(20),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        item.badge,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: item.accentColor,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                item.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  height: 1.2,
                 ),
               ),
-              const SizedBox(width: 8),
-              const Icon(Icons.arrow_forward_ios, size: 14, color: AppColors.grayBorder),
+              const SizedBox(height: 4),
+              Text(
+                item.subtitle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 10.5,
+                  color: AppColors.grayLight,
+                  height: 1.2,
+                ),
+              ),
             ],
           ),
         ),
@@ -300,7 +323,7 @@ class _RequestFormSheetState extends State<_RequestFormSheet> {
       case RequestType.allowance:
         _subType = 'Travel & Meal Allowance';
         _titleController.text = 'Client Onsite Visit Allowance';
-        _detailController.text = 'Amount: \$60.00 • Client: FinTech Corp';
+        _detailController.text = 'Amount: ₱3,000.00 • Client: FinTech Corp';
         break;
       case RequestType.overtime:
         _subType = 'Regular Day OT';
