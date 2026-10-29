@@ -111,3 +111,28 @@ This document catalogs the active skills configured for this Flutter project (`f
 
 - **Android**: Primary focus. Project configured with Android Gradle Plugin & Kotlin (JDK 21 compatible, targeting Java 17). Ready for Android development and testing once Android SDK / emulator / device is connected.
 - **iOS**: Configured and available in `ios/` directory (Xcode 26 ready).
+
+---
+
+## Project Design System & Theming Guidelines
+
+### 1. Mandatory Brand Palette
+All widgets, screens, and features in this application must strictly adhere to the centralized design tokens defined in `lib/core/theme/`:
+- **Primary**: `#55AAAA` (`0xFF55AAAA`) — Main actions, primary buttons, active states, app bars.
+- **Gray**: `#303030` (`0xFF303030`) — Neutral dark accents, secondary button borders, dark surfaces.
+- **Main Black**: `#000000DE` (`0xDE000000`) — 87% alpha high-emphasis typography for headers, titles, and body text.
+
+### 2. Widget Styling Invariants
+- **Never Hardcode Colors**: Do not use `Color(0xFF55AAAA)` directly in UI views. Always use `Theme.of(context).colorScheme.primary`, `Theme.of(context).textTheme`, or `context.customColors`.
+- **Material 3 Component Standard**: Rely on Flutter Material 3 widgets (`FilledButton`, `ElevatedButton`, `OutlinedButton`, `TextField`, `Card`, `AppBar`), which automatically inherit the centralized theme configured in `lib/core/theme/app_theme.dart`.
+
+### 3. Scroll Physics Standard
+- To prevent Android 12+ elastic overscroll distortion from warping component cards, always maintain `overscroll: false` and `BouncingScrollPhysics()` on `MaterialApp.scrollBehavior` and scrollable containers.
+
+---
+
+## Android Toolchain Runbook
+
+- **License Status Issue**: If `flutter doctor` reports `Android license status unknown` with Android SDK 36+, ensure the `cmdline-tools/latest/bin/sdkmanager` script prints `All SDK package licenses accepted.` when called with `--licenses`.
+- **Emulator Userdata Space**: Android 17 (API 37) virtual devices require ~7.4 GB host space for the initial userdata partition. Use `brew cleanup -s` or unmount unused DMGs if host disk space is constrained.
+
