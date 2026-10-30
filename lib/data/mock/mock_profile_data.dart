@@ -2,132 +2,201 @@ import '../models/profile_model.dart';
 
 class MockProfileData {
   static const EmployeeProfile profile = EmployeeProfile(
-    fullName: 'Alex Morgan',
-    employeeId: '#84920',
-    jobTitle: 'Senior Software Engineer',
-    department: 'Software Engineering & Platform',
-    email: 'alex.morgan@company.com',
-    phone: '+1 (555) 019-2834',
-    avatarInitials: 'AM',
+    fullName: 'Paul Javinez',
+    employeeId: '6767-676',
+    jobTitle: 'Developer',
+    department: 'IT',
+    email: 'paul_j@test.com',
+    phone: '0999 676 7676',
+    avatarInitials: '',
+    age: '45 yrs',
+    loginId: 'cbc@67',
+    biometricsNo: '116767',
+    remarks: '',
 
     // Personal / Employee Information
-    birthDate: 'August 14, 1994',
-    gender: 'Female',
+    birthDate: 'June 12, 2000',
+    gender: 'Male',
     civilStatus: 'Single',
     nationality: 'Filipino',
-    residentialAddress: 'Unit 402 Horizon Residences, Emerald Ave, Pasig City',
-    emergencyContactName: 'Clara Morgan',
-    emergencyContactRelation: 'Mother',
-    emergencyContactPhone: '+1 (555) 882-9102',
+    residentialAddress: 'n/a',
+    mobileNo: '0999 676 7676',
+    landlineNo: '',
+    emergencyContactName: 'Lorem Ipsum',
+    emergencyContactRelation: 'Brother',
+    emergencyContactPhone: '0999 676 7676',
+    emergencyAddress: 'n/a',
 
     // Employment Information
-    employmentStatus: 'Regular Full-Time',
-    dateHired: 'March 15, 2021',
-    yearsOfService: '5 Years, 7 Months',
-    directSupervisor: 'Jane Cooper (Lead Engineering Manager)',
-    workSchedule: 'Monday – Friday, 08:00 AM – 05:00 PM',
-    officeLocation: 'Headquarters Tower 1, Level 14',
+    employmentStatus: 'Regular',
+    dateHired: 'June 06, 2017',
+    yearsOfService: '9Y & 4M',
+    period: '9Y & 4M',
+    directSupervisor: '',
+    workSchedule: 'See work schedule',
+    officeLocation: 'Main Office',
+    basicSalary: 67676.67,
+    salaryType: 'Monthly',
+    section: 'N/A',
+    designation: 'IT HEAD',
+
+    // Contributions Info
+    contribPaymentTiming: 'Paid 50% each on 20th',
+    sssNo: '09-9999999-9',
+    philhealthNo: '6767-676-76767',
+    pagibigNo: '',
+    tinNo: '676-767-676',
+    pagibigCont: '--',
+
+    // Loans & Deductions Timing
+    loanPaymentTiming: 'Paid 100% on 5th',
+    deductionPaymentTiming: 'Paid 100% on 5th',
+
+    // Allowances
+    allowances: [
+      AllowanceItem(label: 'Line Leader', amount: 0.00),
+      AllowanceItem(label: 'Carbon', amount: 0.00),
+      AllowanceItem(label: 'Transportation', amount: 0.00),
+      AllowanceItem(label: 'Special Salary', amount: 0.00),
+      AllowanceItem(label: 'Other Benefits', amount: 0.00),
+      AllowanceItem(label: 'ISO', amount: 0.00),
+      AllowanceItem(label: 'Meal', amount: 0.00),
+      AllowanceItem(label: 'Position', amount: 29316.81),
+    ],
+
+    // Entitlements
+    entitlements: [
+      EntitlementGroup(
+        primaryLabel: 'Time Sheet Required',
+        isPrimaryChecked: true,
+        secondaryLabel: 'Flexitime',
+        isSecondaryChecked: false,
+      ),
+      EntitlementGroup(
+        primaryLabel: 'Unworked Regular Holiday Pay',
+        isPrimaryChecked: true,
+        secondaryLabel: 'Unworked Special Holiday Pay',
+        isSecondaryChecked: true,
+      ),
+      EntitlementGroup(
+        primaryLabel: 'Rest Day Pay',
+        isPrimaryChecked: true,
+        secondaryLabel: 'Holiday Premium Pay',
+        isSecondaryChecked: true,
+      ),
+      EntitlementGroup(
+        primaryLabel: 'Night Differential Pay',
+        isPrimaryChecked: true,
+        secondaryLabel: 'Overtime Pay',
+        isSecondaryChecked: false,
+      ),
+      EntitlementGroup(
+        primaryLabel: 'Night Differential Pay',
+        isPrimaryChecked: true,
+        secondaryLabel: 'Overtime Pay',
+        isSecondaryChecked: false,
+      ),
+    ],
 
     // Leave Status
     leaveCredits: [
       LeaveCreditItem(
-        leaveType: 'Vacation Leave (VL)',
-        totalAllocated: 15.0,
-        used: 4.5,
-        remaining: 10.5,
-      ),
-      LeaveCreditItem(
-        leaveType: 'Sick Leave (SL)',
-        totalAllocated: 10.0,
+        leaveType: 'Sick',
+        totalAllocated: 13.0,
         used: 1.0,
-        remaining: 9.0,
+        remaining: 12.0,
       ),
       LeaveCreditItem(
-        leaveType: 'Emergency Leave (EL)',
+        leaveType: 'Vacation',
+        totalAllocated: 13.0,
+        used: 11.9,
+        remaining: 1.1,
+      ),
+      LeaveCreditItem(
+        leaveType: 'Paternity/Maternity',
+        totalAllocated: 7.0,
+        used: 0.0,
+        remaining: 7.0,
+      ),
+      LeaveCreditItem(
+        leaveType: 'Bereavement',
         totalAllocated: 3.0,
         used: 0.0,
         remaining: 3.0,
       ),
       LeaveCreditItem(
-        leaveType: 'Birthday Leave',
-        totalAllocated: 1.0,
-        used: 1.0,
+        leaveType: 'Solo Parent',
+        totalAllocated: 0.0,
+        used: 0.0,
         remaining: 0.0,
       ),
     ],
 
-    // Government Contribution Info
+    // Loan Table
+    loanTableItems: [
+      LoanTableItem(
+        loanType: 'SSS Salary Loan',
+        repaymentPerMonth: 0.00,
+        paidUntil: '',
+      ),
+      LoanTableItem(
+        loanType: 'SSS Calamity Loan',
+        repaymentPerMonth: 0.00,
+        paidUntil: '',
+      ),
+      LoanTableItem(
+        loanType: 'HDMF Salary Loan',
+        repaymentPerMonth: 0.00,
+        paidUntil: '',
+      ),
+      LoanTableItem(
+        loanType: 'HDMF Calamity Loan',
+        repaymentPerMonth: 0.00,
+        paidUntil: '',
+      ),
+    ],
+
+    // Deduction Table
+    deductionTableItems: [
+      DeductionTableItem(
+        deductionType: 'HMO',
+        amountPerMonth: 0.00,
+      ),
+      DeductionTableItem(
+        deductionType: 'Educational Loan',
+        amountPerMonth: 0.00,
+      ),
+      DeductionTableItem(
+        deductionType: 'Emergency Loan',
+        amountPerMonth: 0.00,
+      ),
+    ],
+
+    // Legacy lists preserved
     contributions: [
       GovernmentContributionItem(
         agencyName: 'Social Security System (SSS)',
-        accountOrIdNumber: '04-1298492-1',
+        accountOrIdNumber: '04-4750234-9',
         status: 'Active / Contributing',
         monthlyEmployeeRate: 95.00,
         monthlyEmployerRate: 190.00,
       ),
       GovernmentContributionItem(
         agencyName: 'PhilHealth (PHIC)',
-        accountOrIdNumber: '12-009482910-3',
+        accountOrIdNumber: '0805-165-99123',
         status: 'Active / Updated',
         monthlyEmployeeRate: 80.00,
         monthlyEmployerRate: 80.00,
       ),
       GovernmentContributionItem(
-        agencyName: 'Pag-IBIG HDMF',
-        accountOrIdNumber: '1210-9482-3819',
-        status: 'Active / Updated',
-        monthlyEmployeeRate: 50.00,
-        monthlyEmployerRate: 50.00,
-      ),
-      GovernmentContributionItem(
         agencyName: 'Tax Identification Number (TIN)',
-        accountOrIdNumber: '293-849-102-000',
-        status: 'Verified (RDO 043)',
+        accountOrIdNumber: '250-557-202',
+        status: 'Verified',
         monthlyEmployeeRate: 265.76,
         monthlyEmployerRate: 0.00,
       ),
     ],
-
-    // Loan Information
-    loans: [
-      LoanAccountItem(
-        loanType: 'Company Tech Hardware Loan',
-        referenceNumber: 'COMP-2026-LN-0042',
-        principalAmount: 1500.00,
-        monthlyAmortization: 125.00,
-        balanceRemaining: 750.00,
-        maturityDate: 'April 2027',
-      ),
-      LoanAccountItem(
-        loanType: 'Pag-IBIG Multi-Purpose Loan',
-        referenceNumber: 'HDMF-MPL-88291',
-        principalAmount: 1800.00,
-        monthlyAmortization: 75.00,
-        balanceRemaining: 750.00,
-        maturityDate: 'September 2027',
-      ),
-    ],
-
-    // Deductions Information
-    recurringDeductions: [
-      RecurringDeductionItem(
-        deductionName: 'Company HMO Supplemental Coverage',
-        frequency: 'Semi-monthly',
-        amount: 35.00,
-        notes: 'Dependent insurance plan for 1 parent',
-      ),
-      RecurringDeductionItem(
-        deductionName: 'Employee Cooperative Savings',
-        frequency: 'Semi-monthly',
-        amount: 50.00,
-        notes: 'Voluntary savings fund investment',
-      ),
-      RecurringDeductionItem(
-        deductionName: 'Gym & Wellness Corporate Membership',
-        frequency: 'Monthly',
-        amount: 25.00,
-        notes: 'Subsidized partner gym access',
-      ),
-    ],
+    loans: [],
+    recurringDeductions: [],
   );
 }

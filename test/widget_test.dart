@@ -70,12 +70,27 @@ void main() {
     // 6. Tap Personal tab
     await tester.tap(find.text('Personal'));
     await tester.pumpAndSettle();
-    expect(find.text('Alex Morgan'), findsAtLeastNWidgets(1));
+    expect(find.text('Junichi Yokoi'), findsAtLeastNWidgets(1));
     expect(find.text('Employee Information'), findsOneWidget);
+    expect(find.text('Emergency Information'), findsOneWidget);
+
+    // Tap Tab 1 (Work)
+    await tester.tap(find.byIcon(Icons.work));
+    await tester.pumpAndSettle();
     expect(find.text('Employment Information'), findsOneWidget);
-    expect(find.text('Leave Status & Balances'), findsOneWidget);
-    expect(find.text('Contribution Information'), findsOneWidget);
+    expect(find.text('Allowances'), findsOneWidget);
+    expect(find.text('Entitlements'), findsOneWidget);
+
+    // Tap Tab 2 (Leave)
+    await tester.tap(find.byIcon(Icons.calendar_today));
+    await tester.pumpAndSettle();
+    expect(find.text('Leave Status'), findsOneWidget);
+    expect(find.text('Contribution Info'), findsOneWidget);
+
+    // Tap Tab 3 (Loans & Deductions)
+    await tester.tap(find.byIcon(Icons.account_balance));
+    await tester.pumpAndSettle();
     expect(find.text('Loan Information'), findsOneWidget);
-    expect(find.text('Recurring Deductions'), findsOneWidget);
+    expect(find.text('Deductions'), findsOneWidget);
   });
 }
