@@ -270,9 +270,15 @@ class _PayslipScreenState extends State<PayslipScreen> {
                       Row(
                         children: const [
                           Icon(Icons.arrow_circle_up, color: AppColors.primary, size: 14),
-                          SizedBox(width: 4),
-                          Text('3.29% ', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                          Text('against last payroll', style: TextStyle(fontSize: 10, color: Color(0xFF64748B))),
+                          SizedBox(width: 3),
+                          Text('3.29% ', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                          Expanded(
+                            child: Text(
+                              'against last payroll',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontSize: 9.5, color: Color(0xFF64748B)),
+                            ),
+                          ),
                         ],
                       ),
                     ],
