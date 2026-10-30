@@ -3,6 +3,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/app_formatters.dart';
 import '../../../data/models/profile_model.dart';
 import '../../../data/mock/mock_profile_data.dart';
+import 'personal_schedule_screen.dart';
 
 class PersonalScreen extends StatefulWidget {
   const PersonalScreen({super.key});
@@ -122,7 +123,13 @@ class _PersonalScreenState extends State<PersonalScreen> {
             children: [
               // See work schedule link
               InkWell(
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const PersonalScheduleScreen(),
+                    ),
+                  );
+                },
                 child: const Padding(
                   padding: EdgeInsets.symmetric(vertical: 3),
                   child: Row(
