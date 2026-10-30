@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_app/ui/common/request_view_dialog.dart';
+import 'package:flutter_app/ui/common/request/request_view_dialog.dart';
 
 void main() {
   group('RequestViewDialog tests', () {
