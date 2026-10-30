@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
-import 'package:flutter_app/ui/common/modal_map_dialog.dart';
-import 'package:flutter_app/ui/common/request_view_dialog.dart';
+import 'package:flutter_app/ui/common/map/modal_map_dialog.dart';
+import 'package:flutter_app/ui/common/request/request_view_dialog.dart';
 
 class MockPlatformWebViewController extends PlatformWebViewController {
   MockPlatformWebViewController(super.params) : super.implementation();

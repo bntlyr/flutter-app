@@ -8,7 +8,7 @@ import 'ui/features/portal/portal_screen.dart';
 import 'ui/features/request/request_screen.dart';
 import 'ui/features/splash/splash_screen.dart';
 import 'ui/features/status/status_screen.dart';
-import 'ui/common/request_modal_dialog.dart';
+import 'ui/common/request/request_modal_dialog.dart';
 
 void main() {
   runApp(const MyApp());

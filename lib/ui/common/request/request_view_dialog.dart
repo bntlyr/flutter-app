@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/ui/common/modal_map_dialog.dart';
+import '../map/modal_map_dialog.dart';
 
 /// Represents the approval status of a user request
 enum RequestApprovalStatus {

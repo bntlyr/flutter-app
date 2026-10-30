@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../common/calendar_cut_off.dart';
+import '../../common/calendar/calendar_cut_off.dart';
 
 enum PayrollDetailOption {
   basicPay('Basic Pay'),

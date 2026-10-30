@@ -1,7 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_app/ui/common/calendar_cut_off.dart';
+import 'package:flutter_app/ui/common/calendar/calendar_cut_off.dart';
 
 void main() {
   group('CalendarCutOff Widget tests', () {
