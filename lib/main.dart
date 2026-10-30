@@ -8,6 +8,7 @@ import 'ui/features/portal/portal_screen.dart';
 import 'ui/features/request/request_screen.dart';
 import 'ui/features/splash/splash_screen.dart';
 import 'ui/features/status/status_screen.dart';
+import 'ui/common/request_modal_dialog.dart';
 
 void main() {
   runApp(const MyApp());
@@ -85,6 +86,19 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   ];
 
   void _navigateToTab(int index) {
+    if (index == 2) {
+      // Tapping "Request" tab in dock menu navigates to Status menu (index 3) and immediately opens Add Request modal
+      setState(() {
+        _currentIndex = 3;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          RequestModalDialog.show(context: context);
+        }
+      });
+      return;
+    }
+
     if (index >= 0 && index < _destinations.length) {
       setState(() {
         _currentIndex = index;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_app/ui/common/calendar_date.dart';
-import 'package:flutter_app/ui/features/request/request_screen.dart';
+import 'package:flutter_app/ui/features/status/status_screen.dart';
 
 void main() {
   group('CalendarDate tests', () {
@@ -37,12 +37,12 @@ void main() {
       expect(selectedRange, equals('Oct-02-2026 – Oct-14-2026'));
     });
 
-    testWidgets('RequestScreen opens CalendarDate anchored below Date field and updates selection',
+    testWidgets('StatusScreen opens CalendarDate anchored below Date field and updates selection',
         (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: RequestScreen(),
+            body: StatusScreen(),
           ),
         ),
       );
@@ -73,7 +73,7 @@ void main() {
       expect(find.text('Oct-05-2026 – Oct-20-2026'), findsOneWidget);
     });
 
-    testWidgets('RequestScreen pagination changes page',
+    testWidgets('StatusScreen pagination changes page',
         (WidgetTester tester) async {
       tester.view.physicalSize = const Size(800, 1200);
       tester.view.devicePixelRatio = 1.0;
@@ -82,7 +82,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: RequestScreen(),
+            body: StatusScreen(),
           ),
         ),
       );

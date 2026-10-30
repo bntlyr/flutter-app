@@ -33,23 +33,22 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(DataTable), findsOneWidget);
 
-    // 3. Tap Request tab
+    // 3. Tap Request tab in dock -> navigates to Status screen and opens Add Request modal
     await tester.tap(find.text('Request'));
     await tester.pumpAndSettle();
-    expect(find.text('FILING DATE & TIME'), findsOneWidget);
-    expect(find.text('Leave Application'), findsOneWidget);
-    expect(find.text('Timelogs Correction'), findsOneWidget);
-    expect(find.text('Allowance & Reimbursement'), findsOneWidget);
-    expect(find.text('Overtime (OT) Request'), findsOneWidget);
-    expect(find.text('Day Off Work'), findsOneWidget);
-    expect(find.text('Reshift / Shift Swap'), findsOneWidget);
+    expect(find.text('Request Form'), findsOneWidget);
+    expect(find.text('Type of Request'), findsOneWidget);
 
-    // 4. Tap Status tab
-    await tester.tap(find.text('Status'));
+    // Close the Add Request modal
+    await tester.tap(find.text('Cancel'));
     await tester.pumpAndSettle();
-    expect(find.text('Request Tracker'), findsOneWidget);
+
+    // 4. Verify we are now on Status tab
     expect(find.text('Add Request'), findsOneWidget);
-    expect(find.text('All Statuses'), findsOneWidget);
+    expect(find.text('Date'), findsWidgets);
+    expect(find.text('Leave'), findsWidgets);
+    expect(find.text('Timelogs Correction'), findsWidgets);
+    expect(find.text('Approved'), findsWidgets);
 
     // 5. Tap Payslip tab
     await tester.tap(find.text('Payslip'));
