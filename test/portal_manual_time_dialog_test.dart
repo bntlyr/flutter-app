@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
 import 'package:flutter_app/features/portal/portal_screen.dart';
-import 'package:flutter_app/features/portal/components/portal_manual_time_dialog.dart';
+import 'package:flutter_app/features/portal/presentation/components/portal_manual_time_dialog.dart';
 
 class MockGeolocatorPlatform extends GeolocatorPlatform {
   @override

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_app/features/request/components/modal/request_modal_dialog.dart';
+import 'package:flutter_app/features/request/presentation/components/modal/request_modal_dialog.dart';
 import 'package:flutter_app/features/status/status_screen.dart';
 
 void main() {

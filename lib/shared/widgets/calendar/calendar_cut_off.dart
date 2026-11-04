@@ -11,20 +11,39 @@ enum CalendarViewMode {
 /// Hover/Drag: Semi-circle indicator follows the cursor on the current hovered date only (no teal).
 /// Confirmed selection: Solid teal highlight covers the entire selected date range.
 class CalendarCutOff extends StatefulWidget {
-  final String selectedCutoff;
   final ValueChanged<String>? onCutoffSelected;
   final VoidCallback? onClose;
-  final int initialYear;
-  final int initialMonth;
+  final int? initialYear;
+  final int? initialMonth;
+  final String? selectedCutoff;
 
   const CalendarCutOff({
     super.key,
-    this.selectedCutoff = 'Oct-01-2026 – Oct-15-2026',
+    this.selectedCutoff,
     this.onCutoffSelected,
     this.onClose,
-    this.initialYear = 2026,
-    this.initialMonth = 10,
+    this.initialYear,
+    this.initialMonth,
   });
+
+  /// Dynamically computes active cutoff based on date.
+  /// 1st to 15th: 1st half of month
+  /// 16th to end: 2nd half of month
+  static String getDefaultCutoff([DateTime? date]) {
+    final now = date ?? DateTime.now();
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    final monthStr = months[now.month - 1];
+    final year = now.year;
+    if (now.day <= 15) {
+      return '$monthStr-01-$year – $monthStr-15-$year';
+    } else {
+      final lastDay = DateTime(now.year, now.month + 1, 0).day;
+      return '$monthStr-16-$year – $monthStr-$lastDay-$year';
+    }
+  }
 
   @override
   State<CalendarCutOff> createState() => _CalendarCutOffState();
@@ -57,17 +76,18 @@ class _CalendarCutOffState extends State<CalendarCutOff> {
   @override
   void initState() {
     super.initState();
-    _year = widget.initialYear;
-    _month = widget.initialMonth;
+    final now = DateTime.now();
+    _year = widget.initialYear ?? now.year;
+    _month = widget.initialMonth ?? now.month;
     _yearPageStart = 2016 + (((_year - 2016) / 24).floor() * 24);
-    _parseCutoff(widget.selectedCutoff);
+    _parseCutoff(widget.selectedCutoff ?? CalendarCutOff.getDefaultCutoff(now));
   }
 
   @override
   void didUpdateWidget(CalendarCutOff oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.selectedCutoff != widget.selectedCutoff) {
-      _parseCutoff(widget.selectedCutoff);
+      _parseCutoff(widget.selectedCutoff ?? CalendarCutOff.getDefaultCutoff());
     }
   }
 
@@ -87,7 +107,7 @@ class _CalendarCutOffState extends State<CalendarCutOff> {
       );
       if (mIdx != -1) _month = mIdx + 1;
       _confirmedStart = int.tryParse(startDayStr) ?? 1;
-      int yr = int.tryParse(startYearStr) ?? widget.initialYear;
+      int yr = int.tryParse(startYearStr) ?? widget.initialYear ?? DateTime.now().year;
       if (yr < 100) yr += 2000;
       _year = yr;
       _confirmedEnd = int.tryParse(endDayStr) ?? 15;
@@ -882,6 +902,8 @@ class _CalendarCutOffState extends State<CalendarCutOff> {
     }
 
     // Foreground styling
+    final now = DateTime.now();
+    final isToday = d == now.day && _month == now.month && _year == now.year;
     Widget foreground;
 
     if (isSolidStart || isSolidEnd) {
@@ -960,8 +982,8 @@ class _CalendarCutOffState extends State<CalendarCutOff> {
           ),
         ),
       );
-    } else if (d == 30 && !inSolidRange) {
-      // Day 30 ring outline
+    } else if (isToday && !inSolidRange) {
+      // Current day ring outline
       foreground = Container(
         width: 28,
         height: 28,

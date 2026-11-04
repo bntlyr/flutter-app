@@ -62,13 +62,13 @@ void main() {
     expect(find.text('Total Basic Pay'), findsNothing);
 
     // Open Cut-off calendar popup anchored below input
-    await tester.tap(find.text('Oct-01-2026 – Oct-15-2026'));
+    await tester.tap(find.byIcon(Icons.calendar_month));
     await tester.pumpAndSettle();
-    expect(find.text('OCT'), findsOneWidget);
+    expect(find.text('Apply'), findsOneWidget);
     // Tap custom range (Day 1, then Day 15) and Apply to select cutoff and close
-    await tester.tap(find.text('1'));
+    await tester.tap(find.text('1').last);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('15').first);
+    await tester.tap(find.text('15').last);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Apply'));
     await tester.pumpAndSettle();

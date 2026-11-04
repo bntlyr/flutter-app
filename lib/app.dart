@@ -8,7 +8,7 @@ import 'features/payslip/payslip_screen.dart';
 import 'features/personal/personal_screen.dart';
 import 'features/portal/portal_screen.dart';
 import 'features/request/request_screen.dart';
-import 'features/request/components/modal/request_modal_dialog.dart';
+import 'features/request/presentation/components/modal/request_modal_dialog.dart';
 import 'features/splash/splash_screen.dart';
 import 'features/status/status_screen.dart';
 

@@ -741,6 +741,9 @@ class _CalendarDateState extends State<CalendarDate> {
       }
     }
 
+    // Foreground styling
+    final now = DateTime.now();
+    final isToday = d == now.day && _month == now.month && _year == now.year;
     Widget foreground;
 
     if (isSolidStart || isSolidEnd) {
@@ -815,7 +818,7 @@ class _CalendarDateState extends State<CalendarDate> {
           ),
         ),
       );
-    } else if (d == 30 && !inSolidRange) {
+    } else if (isToday && !inSolidRange) {
       foreground = Container(
         width: 28,
         height: 28,
