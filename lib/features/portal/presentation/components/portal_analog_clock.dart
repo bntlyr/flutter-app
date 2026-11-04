@@ -47,10 +47,9 @@ class PortalAnalogClockCard extends StatelessWidget {
   }
 
   String _formatTime(DateTime d) {
-    final hour = d.hour == 0 ? 12 : (d.hour > 12 ? d.hour - 12 : d.hour);
-    final ampm = d.hour >= 12 ? 'PM' : 'AM';
+    final hourStr = d.hour.toString().padLeft(2, '0');
     final minStr = d.minute.toString().padLeft(2, '0');
-    return '${hour.toString().padLeft(2, '0')}:$minStr $ampm';
+    return '$hourStr:$minStr';
   }
 
   @override

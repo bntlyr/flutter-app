@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../viewmodels/login_viewmodel.dart';
 import 'login_input_field.dart';
 
 /// Login Form component featuring ID*, Password* (with toggleable eye icon),
-/// and the teal Log In button.
+/// error banner, and the teal Log In button.
 class LoginForm extends StatefulWidget {
   final VoidCallback onLoginSuccess;
+  final LoginViewModel? viewModel;
 
   const LoginForm({
     super.key,
     required this.onLoginSuccess,
+    this.viewModel,
   });
 
   @override
@@ -18,13 +21,34 @@ class LoginForm extends StatefulWidget {
 
 class _LoginFormState extends State<LoginForm> {
   final _formKey = GlobalKey<FormState>();
-  final _idController = TextEditingController(text: 'cbc@67');
-  final _passwordController = TextEditingController(text: 'password123');
+  final _idController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _obscurePassword = true;
-  bool _isLoading = false;
+  late final LoginViewModel _viewModel;
+  bool _internalViewModel = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.viewModel != null) {
+      _viewModel = widget.viewModel!;
+    } else {
+      _viewModel = LoginViewModel();
+      _internalViewModel = true;
+    }
+    _viewModel.addListener(_onViewModelUpdate);
+  }
+
+  void _onViewModelUpdate() {
+    if (mounted) setState(() {});
+  }
 
   @override
   void dispose() {
+    _viewModel.removeListener(_onViewModelUpdate);
+    if (_internalViewModel) {
+      _viewModel.dispose();
+    }
     _idController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -32,23 +56,56 @@ class _LoginFormState extends State<LoginForm> {
 
   Future<void> _handleLogin() async {
     if (_formKey.currentState?.validate() ?? false) {
-      setState(() => _isLoading = true);
-      // Proceed directly to main page without waiting for remote API
-      await Future.delayed(const Duration(milliseconds: 200));
-      if (mounted) {
-        setState(() => _isLoading = false);
+      final success = await _viewModel.login(
+        _idController.text.trim(),
+        _passwordController.text,
+      );
+
+      if (success && mounted) {
         widget.onLoginSuccess();
       }
+      // On failure, do not navigate. The error message is rendered in the UI.
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final errorMessage = _viewModel.errorMessage;
+    final isLoading = _viewModel.isLoading;
+
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (errorMessage != null && errorMessage.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEE2E2),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: const Color(0xFFEF4444)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.error_outline, size: 18, color: Color(0xFFDC2626)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      errorMessage,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFFDC2626),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
           // 1. ID Field
           LoginInputField(
             controller: _idController,
@@ -91,7 +148,7 @@ class _LoginFormState extends State<LoginForm> {
           SizedBox(
             height: 44,
             child: ElevatedButton(
-              onPressed: _isLoading ? null : _handleLogin,
+              onPressed: isLoading ? null : _handleLogin,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
@@ -102,7 +159,7 @@ class _LoginFormState extends State<LoginForm> {
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
               ),
-              child: _isLoading
+              child: isLoading
                   ? const SizedBox(
                       width: 20,
                       height: 20,

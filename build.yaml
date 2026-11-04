@@ -1,0 +1,15 @@
+targets:
+  $default:
+    builders:
+      graphql_codegen:
+        options:
+          clients:
+            - graphql
+          outputDirectory: __generated__
+          scalars:
+            Date:
+              type: dynamic
+            JSON:
+              type: dynamic
+            File:
+              type: dynamic

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/features/portal/portal_screen.dart';
+import 'package:flutter_app/features/portal/presentation/pages/portal_screen.dart';
 
 /// Dashboard Page (Employee Portal) presenting clock, action buttons,
 /// attendance alerts, and payroll summaries.

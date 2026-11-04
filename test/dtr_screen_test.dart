@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_app/features/dtr/dtr_screen.dart';
+import 'package:flutter_app/features/dtr/presentation/pages/dtr_screen.dart';
 
 void main() {
   group('DtrScreen tests', () {

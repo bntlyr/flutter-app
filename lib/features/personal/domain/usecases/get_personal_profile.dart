@@ -1,13 +1,13 @@
-import '../entities/personal_profile.dart';
+import 'package:flutter_app/shared/models/profile_model.dart';
 import '../repositories/personal_repository.dart';
 
-/// Usecase for retrieving user personal profile.
+/// UseCase to fetch the authenticated user's employee profile.
 class GetPersonalProfileUseCase {
   final PersonalRepository repository;
 
   const GetPersonalProfileUseCase(this.repository);
 
-  Future<PersonalProfile> execute() {
+  Future<EmployeeProfile> execute() {
     return repository.getProfile();
   }
 }

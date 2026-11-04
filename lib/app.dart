@@ -3,18 +3,21 @@ import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'services/notification_service.dart';
 import 'features/auth/presentation/pages/login_page.dart';
-import 'features/dtr/dtr_screen.dart';
-import 'features/payslip/payslip_screen.dart';
-import 'features/personal/personal_screen.dart';
-import 'features/portal/portal_screen.dart';
-import 'features/request/request_screen.dart';
+import 'features/dtr/presentation/pages/dtr_screen.dart';
+import 'features/payslip/presentation/pages/payslip_screen.dart';
+import 'features/personal/presentation/pages/personal_screen.dart';
+import 'features/personal/presentation/viewmodels/personal_viewmodel.dart';
+import 'features/portal/presentation/pages/portal_screen.dart';
+import 'features/request/presentation/pages/request_screen.dart';
 import 'features/request/presentation/components/modal/request_modal_dialog.dart';
 import 'features/splash/splash_screen.dart';
 import 'features/status/status_screen.dart';
 
 /// Top-level Application Widget.
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final Widget? home;
+
+  const MyApp({super.key, this.home});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +32,7 @@ class MyApp extends StatelessWidget {
         overscroll: false,
         physics: const BouncingScrollPhysics(),
       ),
-      home: const SplashScreen(
+      home: home ?? const SplashScreen(
         nextScreen: LoginPage(),
       ),
     );
@@ -38,7 +41,9 @@ class MyApp extends StatelessWidget {
 
 /// Main Navigation Coordinator housing the 6 feature destinations.
 class MainNavigationScreen extends StatefulWidget {
-  const MainNavigationScreen({super.key});
+  final PersonalViewModel? personalViewModel;
+
+  const MainNavigationScreen({super.key, this.personalViewModel});
 
   @override
   State<MainNavigationScreen> createState() => _MainNavigationScreenState();
@@ -190,7 +195,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           RequestScreen(onNavigateToTab: _navigateToTab),
           StatusScreen(onNavigateToTab: _navigateToTab),
           const PayslipScreen(),
-          const PersonalScreen(),
+          PersonalScreen(viewModel: widget.personalViewModel),
         ],
       ),
       bottomNavigationBar: NavigationBar(

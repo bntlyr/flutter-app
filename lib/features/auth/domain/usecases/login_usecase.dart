@@ -7,7 +7,14 @@ class LoginUseCase {
 
   const LoginUseCase(this.repository);
 
-  Future<User> execute({required String email, required String password}) {
-    return repository.login(email: email, password: password);
+  Future<User> execute({required String username, required String password}) {
+    final cleanUsername = username.trim();
+    if (cleanUsername.isEmpty) {
+      throw ArgumentError('Username cannot be empty');
+    }
+    if (password.isEmpty) {
+      throw ArgumentError('Password cannot be empty');
+    }
+    return repository.login(username: cleanUsername, password: password);
   }
 }

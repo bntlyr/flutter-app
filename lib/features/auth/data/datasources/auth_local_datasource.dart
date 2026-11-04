@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter_app/services/storage_service.dart';
 import '../models/user_model.dart';
 
@@ -6,45 +7,54 @@ abstract class AuthLocalDataSource {
   Future<void> cacheUser(UserModel user);
   Future<UserModel?> getCachedUser();
   Future<void> clearCache();
+  Future<String?> getToken();
 }
 
 class AuthLocalDataSourceImpl implements AuthLocalDataSource {
-  static const String _keyToken = 'auth_token';
-  static const String _keyEmail = 'auth_email';
-  static const String _keyName = 'auth_name';
-  static const String _keyId = 'auth_id';
+  final StorageService? storageService;
+
+  AuthLocalDataSourceImpl({this.storageService});
+
+  Future<StorageService> get _storage async =>
+      storageService ?? await StorageService.getInstance();
 
   @override
   Future<void> cacheUser(UserModel user) async {
-    final storage = await StorageService.getInstance();
-    await storage.setString(_keyId, user.id);
-    await storage.setString(_keyEmail, user.email);
-    await storage.setString(_keyName, user.name);
-    if (user.token != null) {
-      await storage.setString(_keyToken, user.token!);
+    final storage = await _storage;
+    if (user.token != null && user.token!.isNotEmpty) {
+      await storage.saveToken(user.token!);
     }
+    await storage.saveSecureString(
+      StorageService.keyUserSession,
+      jsonEncode(user.toJson()),
+    );
   }
 
   @override
   Future<UserModel?> getCachedUser() async {
-    final storage = await StorageService.getInstance();
-    final id = storage.getString(_keyId);
-    final email = storage.getString(_keyEmail);
-    final name = storage.getString(_keyName);
-    final token = storage.getString(_keyToken);
-
-    if (id != null && email != null && name != null) {
-      return UserModel(id: id, email: email, name: name, token: token);
+    final storage = await _storage;
+    final jsonStr = await storage.getSecureString(StorageService.keyUserSession);
+    if (jsonStr != null && jsonStr.isNotEmpty) {
+      try {
+        final map = jsonDecode(jsonStr) as Map<String, dynamic>;
+        return UserModel.fromJson(map);
+      } catch (_) {
+        return null;
+      }
     }
     return null;
   }
 
   @override
+  Future<String?> getToken() async {
+    final storage = await _storage;
+    return storage.getToken();
+  }
+
+  @override
   Future<void> clearCache() async {
-    final storage = await StorageService.getInstance();
-    await storage.remove(_keyId);
-    await storage.remove(_keyEmail);
-    await storage.remove(_keyName);
-    await storage.remove(_keyToken);
+    final storage = await _storage;
+    await storage.deleteToken();
+    await storage.deleteSecure(StorageService.keyUserSession);
   }
 }

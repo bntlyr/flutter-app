@@ -1,8 +1,9 @@
-import '../../domain/entities/personal_profile.dart';
+import 'package:flutter_app/shared/models/profile_model.dart';
 import '../../domain/repositories/personal_repository.dart';
 import '../datasources/personal_remote_datasource.dart';
+import '../models/personal_schedule_model.dart';
 
-/// Implementation of PersonalRepository.
+/// Implementation of PersonalRepository coordinating remote GraphQL operations.
 class PersonalRepositoryImpl implements PersonalRepository {
   final PersonalRemoteDataSource remoteDataSource;
 
@@ -10,17 +11,22 @@ class PersonalRepositoryImpl implements PersonalRepository {
       : remoteDataSource = remoteDataSource ?? PersonalRemoteDataSourceImpl();
 
   @override
-  Future<PersonalProfile> getProfile() async {
-    final emp = await remoteDataSource.getProfile();
-    return PersonalProfile(
-      id: emp.employeeId,
-      fullName: emp.fullName,
-      age: emp.age,
-      jobClass: emp.jobClass,
-      loginId: emp.loginId,
-      employeeId: emp.employeeId,
-      biometricsNo: emp.biometricsNo,
-      remarks: emp.remarks,
+  Future<EmployeeProfile> getProfile() async {
+    return remoteDataSource.getProfile();
+  }
+
+  @override
+  Future<List<ShiftDayData>> getSchedule({
+    required String userId,
+    required DateTime month,
+  }) async {
+    final queryData = await remoteDataSource.getSchedule(
+      userId: userId,
+      month: month,
+    );
+    return PersonalScheduleMapper.fromQuery(
+      data: queryData,
+      targetMonth: month,
     );
   }
 }

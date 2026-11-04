@@ -1,22 +1,24 @@
+import '../../../../core/graphql/graphql_client.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_local_datasource.dart';
 import '../datasources/auth_remote_datasource.dart';
 
-/// Implementation of AuthRepository combining remote and local data sources.
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
   final AuthLocalDataSource localDataSource;
 
   AuthRepositoryImpl({
-    AuthRemoteDataSource? remoteDataSource,
-    AuthLocalDataSource? localDataSource,
-  })  : remoteDataSource = remoteDataSource ?? AuthRemoteDataSourceImpl(),
-        localDataSource = localDataSource ?? AuthLocalDataSourceImpl();
+    required this.remoteDataSource,
+    required this.localDataSource,
+  });
 
   @override
-  Future<User> login({required String email, required String password}) async {
-    final userModel = await remoteDataSource.login(email: email, password: password);
+  Future<User> login({required String username, required String password}) async {
+    final userModel = await remoteDataSource.login(
+      username: username,
+      password: password,
+    );
     await localDataSource.cacheUser(userModel);
     return userModel;
   }
@@ -24,10 +26,22 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> logout() async {
     await localDataSource.clearCache();
+    AppGraphQLClient.resetClient();
   }
 
   @override
   Future<User?> getCurrentUser() async {
     return localDataSource.getCachedUser();
+  }
+
+  @override
+  Future<String?> getToken() async {
+    return localDataSource.getToken();
+  }
+
+  @override
+  Future<bool> isAuthenticated() async {
+    final token = await localDataSource.getToken();
+    return token != null && token.isNotEmpty;
   }
 }

@@ -1,0 +1,148 @@
+query Personal($time: String) {
+  me(time: $time) {
+    id
+    username
+    email
+    profile {
+      id
+      biometricNo
+      profilePic
+      employeeId
+      firstName
+      middleName
+      lastName
+      birthdate
+      gender
+      civilStatus
+      mobileNo
+      landlineNo
+      address
+      remarks
+      emergencyName
+      emergencyRelation
+      emergencyContact
+      emergencyAddress
+      dateHired
+      resignationDate
+      provisionalPeriodStart
+      provisionalPeriodEnd
+      statusDescription
+      contractualTermStart
+      contractualTermEnd
+      department {
+        id
+        name
+      }
+      designation
+      basicSalary
+      salaryType
+      siteId
+      sssNo
+      philhealthNo
+      pagibigNo
+      pagibigAmount
+      tinNo
+      contribTiming
+      loanTiming
+      deductTiming
+      isMinimumWageEarner
+      isTimeSheetRequired
+      isRegHolidayPay
+      isSpecHolidayPay
+      isRestDayPay
+      isHolidayPremiumPay
+      isNightDiffPay
+      isOtPay
+      isNoLate
+      isNoUndertime
+      isFlexy
+      site {
+        id
+        name
+      }
+      section {
+        id
+        name
+      }
+      getSection {
+        id
+        name
+      }
+      position {
+        id
+        name
+      }
+      leave {
+        id
+        userId
+        code
+        label
+        carried_over
+        total_leave
+        used_leave
+        unused_leave
+        leaveHistory {
+          id
+          begin
+          count
+          end
+        }
+        profileLeaveHistory {
+          id
+          begin
+          count
+          end
+        }
+        leaveType {
+          id
+          code
+          label
+          initial
+          multiplier
+          behavior
+        }
+      }
+      userDeduction {
+        deduction {
+          label
+          type
+        }
+        id
+        userId
+        type
+        amount
+        paidUntil
+      }
+      userSubsidies {
+        id
+        userId
+        regulation
+        amount
+        subsidyId
+        subsidy {
+          id
+          label
+          duration
+          classType
+          deminimisId
+          regulation
+          taxationPeriod
+          max
+        }
+      }
+    }
+  }
+  cutOffs {
+    timeStart
+    timeEnd
+    id
+    timing
+    payrollCredited
+  }
+  settings {
+    id
+    salaryDayLabel1
+    salaryDayLabel2
+    pagIbig
+  }
+}

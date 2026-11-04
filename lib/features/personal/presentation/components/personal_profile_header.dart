@@ -110,7 +110,11 @@ class PersonalProfileHeader extends StatelessWidget {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => const PersonalScheduleScreen(),
+                      builder: (_) => PersonalScheduleScreen(
+                        userId: profile.userId.isNotEmpty
+                            ? profile.userId
+                            : profile.loginId,
+                      ),
                     ),
                   );
                 },

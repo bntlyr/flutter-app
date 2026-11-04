@@ -1,0 +1,169 @@
+query Schedule(
+  $userId: ID!
+  $dateRange: DailyDateInputFilter
+  $targetDate: Date
+  $time: String
+  $filter: RequestInputFilter
+) {
+  me {
+    id
+    name
+    profile {
+      id
+      firstName
+      middleName
+      lastName
+      site {
+        id
+        workStart
+        workBreakStart
+        workBreakEnd
+        workEnd
+      }
+    }
+  }
+  requests(filter: $filter) {
+    id
+    regId
+    dateApplied
+    typeOfRequest
+    leaveFrom
+    leaveTo
+    finalApproved
+  }
+  schedule(userId: $userId) {
+    id
+    userId
+    sunType
+    sunWorkStart
+    sunBreakStart
+    sunBreakEnd
+    sunWorkEnd
+    sunTotal
+    monType
+    monWorkStart
+    monBreakStart
+    monBreakEnd
+    monWorkEnd
+    monTotal
+    tueType
+    tueWorkStart
+    tueBreakStart
+    tueBreakEnd
+    tueWorkEnd
+    tueTotal
+    wedType
+    wedWorkStart
+    wedBreakStart
+    wedBreakEnd
+    wedWorkEnd
+    wedTotal
+    thuType
+    thuWorkStart
+    thuBreakStart
+    thuBreakEnd
+    thuWorkEnd
+    thuTotal
+    friType
+    friWorkStart
+    friBreakStart
+    friBreakEnd
+    friWorkEnd
+    friTotal
+    satType
+    satWorkStart
+    satBreakStart
+    satBreakEnd
+    satWorkEnd
+    satTotal
+    regId
+    modId
+  }
+  scheduleHistories(targetDate: $targetDate, userId: $userId) {
+    id
+    userId
+    effectivity
+    sunType
+    sunWorkStart
+    sunBreakStart
+    sunBreakEnd
+    sunWorkEnd
+    sunTotal
+    monType
+    monWorkStart
+    monBreakStart
+    monBreakEnd
+    monWorkEnd
+    monTotal
+    tueType
+    tueWorkStart
+    tueBreakStart
+    tueBreakEnd
+    tueWorkEnd
+    tueTotal
+    wedType
+    wedWorkStart
+    wedBreakStart
+    wedBreakEnd
+    wedWorkEnd
+    wedTotal
+    thuType
+    thuWorkStart
+    thuBreakStart
+    thuBreakEnd
+    thuWorkEnd
+    thuTotal
+    friType
+    friWorkStart
+    friBreakStart
+    friBreakEnd
+    friWorkEnd
+    friTotal
+    satType
+    satWorkStart
+    satBreakStart
+    satBreakEnd
+    satWorkEnd
+    satTotal
+  }
+  dailies(userId: $userId, dateRange: $dateRange, time: $time) {
+    id
+    userId
+    date
+    dateStr
+    type
+    workStart
+    breakStart
+    breakEnd
+    workEnd
+    total
+    metadata
+    regId
+    modId
+    createdAt
+    updatedAt
+  }
+  awaitingCutOff {
+    id
+    timeStart
+    timeEnd
+    payrollPeriod
+    payrollCredited
+    timing
+    status
+  }
+  cutOffs {
+    id
+    timeStart
+    status
+    timeEnd
+  }
+  holidays(userId: $userId) {
+    id
+    name
+    holidayDate
+    type
+    appliedIn
+    timing
+  }
+}
