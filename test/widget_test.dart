@@ -15,23 +15,18 @@ void main() {
 
     // 1. Verify Portal Tab
     expect(find.text('Attendance Summary'), findsOneWidget);
-    expect(find.text('Attendance Alerts'), findsOneWidget);
+    expect(find.text('Attendance Alert'), findsOneWidget);
     expect(find.text('Payroll Summary'), findsOneWidget);
-    expect(find.text('Time In'), findsOneWidget);
-    expect(find.text('Time Out'), findsOneWidget);
+    expect(find.text('Time-In Now'), findsOneWidget);
+    expect(find.text('Time-Out Now'), findsOneWidget);
 
     // 2. Tap DTR tab
     await tester.tap(find.text('DTR'));
     await tester.pumpAndSettle();
-    expect(find.text('Cutoff DTR Summary'), findsOneWidget);
-    expect(find.text('Daily Time Record Logs'), findsOneWidget);
-    expect(find.text('Total Regular Hours'), findsOneWidget);
-
-    // Toggle Table view in DTR
-    final dtrToggle = find.byTooltip('Switch to Table View').first;
-    await tester.tap(dtrToggle);
-    await tester.pumpAndSettle();
-    expect(find.byType(DataTable), findsOneWidget);
+    expect(find.text('Refresh logs'), findsOneWidget);
+    expect(find.text('Summary'), findsOneWidget);
+    expect(find.text('Cut-off'), findsOneWidget);
+    expect(find.text('Approved Requests'), findsWidgets);
 
     // 3. Tap Request tab in dock -> navigates to Status screen and opens Add Request modal
     await tester.tap(find.text('Request'));

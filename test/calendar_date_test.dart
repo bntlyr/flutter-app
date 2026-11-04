@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_app/ui/shared/widgets/calendar/calendar_date.dart';
-import 'package:flutter_app/ui/features/status/status_screen.dart';
+import 'package:flutter_app/shared/widgets/calendar/calendar_date.dart';
+import 'package:flutter_app/features/status/status_screen.dart';
 
 void main() {
   group('CalendarDate tests', () {
