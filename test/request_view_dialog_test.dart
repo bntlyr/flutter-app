@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_app/ui/common/request/request_view_dialog.dart';
+import 'package:flutter_app/features/request/presentation/components/view/request_view_dialog.dart';
 
 void main() {
   group('RequestViewDialog tests', () {
@@ -164,6 +164,12 @@ void main() {
 
       expect(find.text('Pre-Approved'), findsOneWidget);
       expect(find.textContaining('Panisales, Christine Mae'), findsOneWidget);
+
+      // Dismiss via barrier tap
+      await tester.tapAt(const Offset(20, 20));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(RequestViewDialog), findsNothing);
     });
   });
 }

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
-import 'package:flutter_app/ui/common/map/modal_map_dialog.dart';
-import 'package:flutter_app/ui/common/request/request_view_dialog.dart';
+import 'package:flutter_app/shared/widgets/map/modal_map_dialog.dart';
+import 'package:flutter_app/features/request/presentation/components/view/request_view_dialog.dart';
 
 class MockPlatformWebViewController extends PlatformWebViewController {
   MockPlatformWebViewController(super.params) : super.implementation();
@@ -190,8 +190,15 @@ void main() {
       await tester.tap(find.byKey(const Key('see_applied_location_button')));
       await tester.pumpAndSettle();
 
-      // Verify modal map is open
+      // Verify modal map is open as full screen route, not BottomSheet
       expect(find.byType(ModalMapDialog), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(ModalMapDialog),
+          matching: find.byType(Scaffold),
+        ),
+        findsOneWidget,
+      );
       expect(find.byType(WebViewWidget), findsOneWidget);
       expect(
         find.descendant(

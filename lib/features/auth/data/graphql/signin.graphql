@@ -1,0 +1,14 @@
+mutation Signin($creds: CredentialsInput!) {
+  signin(credentials: $creds) {
+    userErrors {
+      message
+    }
+    token
+    company {
+      id
+      companyName
+      companyAddress
+      companyEmail
+    }
+  }
+}

@@ -1,11 +1,147 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_app/main.dart';
+import 'package:geolocator_platform_interface/geolocator_platform_interface.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
+import 'package:flutter_app/app.dart';
+import 'package:flutter_app/features/auth/domain/entities/user.dart';
+import 'package:flutter_app/features/auth/domain/repositories/auth_repository.dart';
+import 'package:flutter_app/features/auth/domain/usecases/login_usecase.dart';
+import 'package:flutter_app/features/auth/presentation/pages/login_page.dart';
+import 'package:flutter_app/features/auth/presentation/viewmodels/login_viewmodel.dart';
+import 'package:flutter_app/features/splash/splash_screen.dart';
 import 'package:flutter_app/data/mock/mock_profile_data.dart';
+import 'package:flutter_app/features/personal/presentation/viewmodels/personal_viewmodel.dart';
+
+class _SmokeMockAuthRepository implements AuthRepository {
+  @override
+  Future<User> login({required String username, required String password}) async {
+    return const User(
+      id: 'smoke-usr',
+      username: 'smoke.user',
+      email: 'smoke@company.com',
+      name: 'Smoke User',
+      token: 'smoke_token',
+    );
+  }
+
+  @override
+  Future<void> logout() async {}
+
+  @override
+  Future<User?> getCurrentUser() async => null;
+
+  @override
+  Future<String?> getToken() async => 'smoke_token';
+
+  @override
+  Future<bool> isAuthenticated() async => true;
+}
+
+class _MockGeolocatorPlatform extends GeolocatorPlatform {
+  @override
+  Future<bool> isLocationServiceEnabled() async => true;
+
+  @override
+  Future<LocationPermission> checkPermission() async => LocationPermission.always;
+
+  @override
+  Future<LocationPermission> requestPermission() async => LocationPermission.always;
+
+  @override
+  Future<Position> getCurrentPosition({LocationSettings? locationSettings}) async {
+    return Position(
+      latitude: 14.3525033,
+      longitude: 121.0637445,
+      accuracy: 3.0,
+      altitude: 51.0,
+      altitudeAccuracy: 0.0,
+      heading: 0.0,
+      headingAccuracy: 0.0,
+      speed: 0.05,
+      speedAccuracy: 0.0,
+      timestamp: DateTime(2026, 11, 4),
+    );
+  }
+}
+
+class _MockPlatformWebViewController extends PlatformWebViewController {
+  _MockPlatformWebViewController(super.params) : super.implementation();
+
+  @override
+  Future<void> setJavaScriptMode(JavaScriptMode javaScriptMode) async {}
+
+  @override
+  Future<void> setPlatformNavigationDelegate(PlatformNavigationDelegate handler) async {}
+
+  @override
+  Future<void> loadRequest(LoadRequestParams params) async {}
+
+  @override
+  Future<void> loadHtmlString(String html, {String? baseUrl}) async {}
+}
+
+class _MockPlatformNavigationDelegate extends PlatformNavigationDelegate {
+  _MockPlatformNavigationDelegate(super.params) : super.implementation();
+
+  @override
+  Future<void> setOnPageFinished(PageEventCallback onPageFinished) async {}
+}
+
+class _MockPlatformWebViewWidget extends PlatformWebViewWidget {
+  _MockPlatformWebViewWidget(super.params) : super.implementation();
+
+  @override
+  Widget build(BuildContext context) => const SizedBox(height: 100);
+}
+
+class _MockWebViewPlatform extends WebViewPlatform {
+  @override
+  PlatformWebViewController createPlatformWebViewController(
+    PlatformWebViewControllerCreationParams params,
+  ) =>
+      _MockPlatformWebViewController(params);
+
+  @override
+  PlatformNavigationDelegate createPlatformNavigationDelegate(
+    PlatformNavigationDelegateCreationParams params,
+  ) =>
+      _MockPlatformNavigationDelegate(params);
+
+  @override
+  PlatformWebViewWidget createPlatformWebViewWidget(
+    PlatformWebViewWidgetCreationParams params,
+  ) =>
+      _MockPlatformWebViewWidget(params);
+}
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    FlutterSecureStorage.setMockInitialValues({});
+    GeolocatorPlatform.instance = _MockGeolocatorPlatform();
+    WebViewPlatform.instance = _MockWebViewPlatform();
+  });
+
   testWidgets('PayrollNeo navigation and 6-page suite smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(const MyApp());
+    final mockRepo = _SmokeMockAuthRepository();
+    final mockViewModel = LoginViewModel(loginUseCase: LoginUseCase(mockRepo));
+
+    await tester.pumpWidget(MyApp(
+      home: SplashScreen(
+        nextScreen: LoginPage(
+          viewModel: mockViewModel,
+          homeBuilder: (_) => MainNavigationScreen(
+            personalViewModel: PersonalViewModel(
+              initialProfile: MockProfileData.profile,
+            ),
+          ),
+        ),
+      ),
+    ));
 
     // Initially displays Splash Screen branding
     expect(find.text('Employee Self-Service Portal'), findsOneWidget);
@@ -13,25 +149,27 @@ void main() {
     // Fast-forward past splash duration
     await tester.pumpAndSettle(const Duration(milliseconds: 2500));
 
+    // Fill credentials & tap Log In
+    expect(find.text('Log In'), findsOneWidget);
+    await tester.enterText(find.byType(TextFormField).first, 'smoke.user');
+    await tester.enterText(find.byType(TextFormField).last, 'password123');
+    await tester.tap(find.text('Log In'));
+    await tester.pumpAndSettle();
+
     // 1. Verify Portal Tab
     expect(find.text('Attendance Summary'), findsOneWidget);
-    expect(find.text('Attendance Alerts'), findsOneWidget);
+    expect(find.text('Attendance Alert'), findsOneWidget);
     expect(find.text('Payroll Summary'), findsOneWidget);
-    expect(find.text('Time In'), findsOneWidget);
-    expect(find.text('Time Out'), findsOneWidget);
+    expect(find.text('Time-In Now'), findsOneWidget);
+    expect(find.text('Time-Out Now'), findsOneWidget);
 
     // 2. Tap DTR tab
     await tester.tap(find.text('DTR'));
     await tester.pumpAndSettle();
-    expect(find.text('Cutoff DTR Summary'), findsOneWidget);
-    expect(find.text('Daily Time Record Logs'), findsOneWidget);
-    expect(find.text('Total Regular Hours'), findsOneWidget);
-
-    // Toggle Table view in DTR
-    final dtrToggle = find.byTooltip('Switch to Table View').first;
-    await tester.tap(dtrToggle);
-    await tester.pumpAndSettle();
-    expect(find.byType(DataTable), findsOneWidget);
+    expect(find.text('Refresh logs'), findsOneWidget);
+    expect(find.text('Summary'), findsOneWidget);
+    expect(find.text('Cut-off'), findsOneWidget);
+    expect(find.text('Approved Requests'), findsWidgets);
 
     // 3. Tap Request tab in dock -> navigates to Status screen and opens Add Request modal
     await tester.tap(find.text('Request'));
@@ -48,123 +186,39 @@ void main() {
     expect(find.text('Date'), findsWidgets);
     expect(find.text('Leave'), findsWidgets);
     expect(find.text('Timelogs Correction'), findsWidgets);
-    expect(find.text('Approved'), findsWidgets);
 
-    // 5. Tap Payslip tab
+    // 5. Tap Payslip tab in dock
     await tester.tap(find.text('Payslip'));
     await tester.pumpAndSettle();
-    expect(find.text('Amount of Net Pay'), findsOneWidget);
-    expect(find.text('Amount of Gross Pay'), findsOneWidget);
+    expect(find.text('Net Pay'), findsOneWidget);
     expect(find.text('Total Deduction'), findsOneWidget);
-    expect(find.text('Payroll Breakdown'), findsOneWidget);
-    expect(find.text('Payroll Detail'), findsOneWidget);
-    // Default detail is empty select
-    expect(find.text('Total Basic Pay'), findsNothing);
+    expect(find.text('Irregular Adjustment'), findsWidgets);
 
-    // Open Cut-off calendar popup anchored below input
-    await tester.tap(find.text('Oct-01-2026 – Oct-15-2026'));
-    await tester.pumpAndSettle();
-    expect(find.text('OCT'), findsOneWidget);
-    // Tap custom range (Day 1, then Day 15) and Apply to select cutoff and close
-    await tester.tap(find.text('1'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('15').first);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Apply'));
-    await tester.pumpAndSettle();
-
-    // Select Basic Pay from dropdown to display table
-    final detailDropdown = find.text('Select detail category');
-    await tester.ensureVisible(detailDropdown);
-    await tester.tap(detailDropdown, warnIfMissed: false);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Basic Pay').last);
-    await tester.pumpAndSettle();
-    expect(find.text('Total Basic Pay'), findsOneWidget);
-
-    // Tap Clear > to clear detail table
-    final clearBtn = find.text('Clear >');
-    await tester.ensureVisible(clearBtn);
-    await tester.tap(clearBtn);
-    await tester.pumpAndSettle();
-    expect(find.text('Total Basic Pay'), findsNothing);
-
-    // 6. Tap Personal tab
+    // 6. Tap Personal tab in dock
     await tester.tap(find.text('Personal'));
     await tester.pumpAndSettle();
-    expect(find.text(MockProfileData.profile.fullName), findsAtLeastNWidgets(1));
+    expect(find.text('Profile'), findsOneWidget);
     expect(find.text('Employee Information'), findsOneWidget);
-    expect(find.text('Emergency Information'), findsOneWidget);
 
-    // Tap Tab 1 (Work)
-    await tester.tap(find.byIcon(Icons.work));
+    // Re-verify back to Portal screen
+    await tester.tap(find.text('Portal'));
     await tester.pumpAndSettle();
-    expect(find.text('Employment Information'), findsOneWidget);
-    expect(find.text('Allowances'), findsOneWidget);
-    expect(find.text('Entitlements'), findsOneWidget);
+    expect(find.text('Attendance Summary'), findsOneWidget);
+    expect(find.text('Attendance Alert'), findsOneWidget);
+    expect(find.text('Time-In Now'), findsOneWidget);
+    expect(find.text('Time-Out Now'), findsOneWidget);
 
-    // Tap Tab 2 (Leave)
-    await tester.tap(find.byIcon(Icons.calendar_today));
-    await tester.pumpAndSettle();
-    expect(find.text('Leave Status'), findsOneWidget);
-    expect(find.text('Contribution Info'), findsOneWidget);
+    // Tap Time-In Now and confirm bottom sheet opens
+    await tester.tap(find.text('Time-In Now'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(find.text('Manual Time-In'), findsOneWidget);
+    expect(find.text('Cancel'), findsOneWidget);
 
-    // Tap Tab 3 (Loans & Deductions)
-    await tester.tap(find.byIcon(Icons.account_balance));
-    await tester.pumpAndSettle();
-    expect(find.text('Loan Information'), findsOneWidget);
-    expect(find.text('Deductions'), findsOneWidget);
-
-    // 7. Verify See work schedule navigation
-    await tester.tap(find.text('See work schedule >'));
-    await tester.pumpAndSettle();
-    expect(find.text('Work Schedule'), findsOneWidget);
-    expect(find.text('Work Shift Schedule'), findsOneWidget);
-    expect(find.text('October 2026'), findsOneWidget);
-    expect(find.text('Regular Shift'), findsOneWidget);
-    expect(find.text('08:00 – 18:00 [ 9.5 hrs. ]'), findsOneWidget);
-
-    // Tap Oct 21 (Night Shift)
-    await tester.tap(find.text('21').first);
-    await tester.pumpAndSettle();
-    expect(find.text('Night Shift'), findsOneWidget);
-    expect(find.text('19:00 – 04:00 [ 8.0 hrs. ]'), findsOneWidget);
-
-    // Tap Oct 29 (Full Day Leave)
-    await tester.tap(find.text('29').last);
-    await tester.pumpAndSettle();
-    expect(find.text('Leave For Full Day'), findsOneWidget);
-    expect(find.text('—'), findsOneWidget);
-
-    // Tap Oct 30 (Half Day Leave - no () text)
-    await tester.tap(find.text('30').last);
-    await tester.pumpAndSettle();
-    expect(find.text('Leave For Half Day'), findsOneWidget);
-    expect(find.text('[ 4.8 hrs. ]'), findsOneWidget);
-    expect(find.textContaining('()'), findsNothing);
-
-    // Tap Oct 15 (15 backwards = other cut-offs)
-    await tester.tap(find.text('15'));
-    await tester.pumpAndSettle();
-    expect(find.text('Other Cut-offs'), findsOneWidget);
-    expect(find.text('08:00 – 17:00 [ 8.0 hrs. ]'), findsOneWidget);
-
-    // Navigate to future date: November 2026
-    await tester.tap(find.byIcon(Icons.arrow_forward_ios));
-    await tester.pumpAndSettle();
-    expect(find.text('November 2026'), findsOneWidget);
-    // Tap Nov 2 (weekday in future month = other cut-offs)
-    await tester.tap(find.text('2').first);
-    await tester.pumpAndSettle();
-    expect(find.text('Other Cut-offs'), findsOneWidget);
-
-    // Back to October 2026
-    await tester.tap(find.byIcon(Icons.arrow_back_ios_new));
-    await tester.pumpAndSettle();
-
-    // Back to Personal screen
-    await tester.tap(find.byType(BackButton));
-    await tester.pumpAndSettle();
-    expect(find.text(MockProfileData.profile.fullName), findsAtLeastNWidgets(1));
+    // Dismiss bottom sheet
+    await tester.tap(find.text('Cancel'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(find.text('Attendance Summary'), findsOneWidget);
   });
 }

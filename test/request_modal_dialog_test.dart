@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_app/ui/common/request/request_modal_dialog.dart';
-import 'package:flutter_app/ui/features/status/status_screen.dart';
+import 'package:flutter_app/features/request/presentation/components/modal/request_modal_dialog.dart';
+import 'package:flutter_app/features/status/status_screen.dart';
 
 void main() {
   group('RequestModalDialog tests', () {
@@ -311,6 +311,25 @@ void main() {
       expect(find.text('Work Break Start'), findsOneWidget);
       expect(find.text('Work Break End'), findsOneWidget);
       expect(find.text('Work End'), findsOneWidget);
+
+      // Tap Work Start opens 24-hour time picker
+      await tester.tap(find.text('Work Start'));
+      await tester.pumpAndSettle();
+      expect(find.byType(TimePickerDialog), findsOneWidget);
+      final mediaQuery = tester.widget<MediaQuery>(
+        find.ancestor(
+          of: find.byType(TimePickerDialog),
+          matching: find.byType(MediaQuery),
+        ).first,
+      );
+      expect(mediaQuery.data.alwaysUse24HourFormat, isTrue);
+
+      // Cancel time picker dialog
+      await tester.tap(find.descendant(
+        of: find.byType(TimePickerDialog),
+        matching: find.text('Cancel'),
+      ));
+      await tester.pumpAndSettle();
     });
 
     testWidgets('tapping Add Request on StatusScreen opens RequestModalDialog',
@@ -332,6 +351,86 @@ void main() {
       expect(find.byType(RequestModalDialog), findsOneWidget);
       expect(find.text('Request Form'), findsOneWidget);
       expect(find.text('Cancel'), findsOneWidget);
+
+      // Dismiss by tapping header close button
+      expect(find.byKey(const Key('request_modal_close_button')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('request_modal_close_button')));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(RequestModalDialog), findsNothing);
+    });
+
+    testWidgets('responsive date picker overlay opens centered, navigates and selects date',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (ctx) => ElevatedButton(
+                onPressed: () => RequestModalDialog.show(
+                  context: ctx,
+                  initialTypeOfRequest: 'Leave',
+                ),
+                child: const Text('Open Leave Form'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Open Leave Form'));
+      await tester.pumpAndSettle();
+
+      // Tap the "From:" date picker input (calendar icon)
+      final calendarIcons = find.byIcon(Icons.calendar_today_outlined);
+      expect(calendarIcons, findsWidgets);
+      await tester.tap(calendarIcons.first);
+      await tester.pumpAndSettle();
+
+      // Verify date picker modal is visible with Month Year and navigation chevrons
+      expect(find.byIcon(Icons.chevron_left), findsOneWidget);
+      expect(find.byIcon(Icons.chevron_right), findsOneWidget);
+      expect(find.byIcon(Icons.keyboard_double_arrow_left), findsOneWidget);
+      expect(find.byIcon(Icons.keyboard_double_arrow_right), findsOneWidget);
+      expect(find.text('Today'), findsOneWidget);
+      expect(find.text('Cancel'), findsWidgets);
+
+      // Tap Today button to select today's date and close overlay
+      await tester.tap(find.text('Today'));
+      await tester.pumpAndSettle();
+
+      // Overlay is closed, Leave bottom sheet is still open
+      expect(find.byType(RequestModalDialog), findsOneWidget);
+      expect(find.text('Today'), findsNothing);
+    });
+
+    testWidgets('dismisses bottom sheet via barrier tap or downward drag',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (ctx) => ElevatedButton(
+                onPressed: () => RequestModalDialog.show(context: ctx),
+                child: const Text('Open Modal'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Open Modal'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(RequestModalDialog), findsOneWidget);
+
+      // Tap barrier above the bottom sheet (e.g. top of screen)
+      await tester.tapAt(const Offset(20, 20));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(RequestModalDialog), findsNothing);
     });
   });
 }
