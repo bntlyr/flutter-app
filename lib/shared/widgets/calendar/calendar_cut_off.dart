@@ -73,7 +73,7 @@ class _CalendarCutOffState extends State<CalendarCutOff> {
 
   void _parseCutoff(String cutoff) {
     final match = RegExp(
-      r'([A-Za-z]{3})[-/ ](\d{1,2})[-/ ](\d{4})\s*[-–—]\s*([A-Za-z]{3})[-/ ](\d{1,2})[-/ ](\d{4})',
+      r'([A-Za-z]{3})[-/ ](\d{1,2})[-/ ](\d{2,4})\s*[-–—]\s*([A-Za-z]{3})[-/ ](\d{1,2})[-/ ](\d{2,4})',
     ).firstMatch(cutoff);
 
     if (match != null) {
@@ -87,7 +87,9 @@ class _CalendarCutOffState extends State<CalendarCutOff> {
       );
       if (mIdx != -1) _month = mIdx + 1;
       _confirmedStart = int.tryParse(startDayStr) ?? 1;
-      _year = int.tryParse(startYearStr) ?? widget.initialYear;
+      int yr = int.tryParse(startYearStr) ?? widget.initialYear;
+      if (yr < 100) yr += 2000;
+      _year = yr;
       _confirmedEnd = int.tryParse(endDayStr) ?? 15;
     } else {
       _confirmedStart = 1;

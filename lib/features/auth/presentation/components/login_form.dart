@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/components/buttons/app_button.dart';
-import 'package:flutter_app/components/inputs/app_text_field.dart';
-import '../viewmodels/login_viewmodel.dart';
+import '../../../../core/theme/app_colors.dart';
+import 'login_input_field.dart';
 
-/// Form component for user login credentials.
+/// Login Form component featuring ID*, Password* (with toggleable eye icon),
+/// and the teal Log In button.
 class LoginForm extends StatefulWidget {
-  final LoginViewModel viewModel;
   final VoidCallback onLoginSuccess;
 
   const LoginForm({
     super.key,
-    required this.viewModel,
     required this.onLoginSuccess,
   });
 
@@ -20,24 +18,25 @@ class LoginForm extends StatefulWidget {
 
 class _LoginFormState extends State<LoginForm> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController(text: 'cbc@67');
+  final _idController = TextEditingController(text: 'cbc@67');
   final _passwordController = TextEditingController(text: 'password123');
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _idController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  Future<void> _submit() async {
+  Future<void> _handleLogin() async {
     if (_formKey.currentState?.validate() ?? false) {
-      final success = await widget.viewModel.login(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
-      if (success) {
+      setState(() => _isLoading = true);
+      // Proceed directly to main page without waiting for remote API
+      await Future.delayed(const Duration(milliseconds: 200));
+      if (mounted) {
+        setState(() => _isLoading = false);
         widget.onLoginSuccess();
       }
     }
@@ -50,41 +49,90 @@ class _LoginFormState extends State<LoginForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          AppTextField(
-            controller: _emailController,
-            label: 'Login ID / Email',
-            hint: 'Enter your Login ID or email',
-            prefixIcon: const Icon(Icons.person_outline, size: 20),
-            validator: (v) => (v == null || v.isEmpty) ? 'Please enter Login ID' : null,
+          // 1. ID Field
+          LoginInputField(
+            controller: _idController,
+            labelText: 'ID*',
+            keyboardType: TextInputType.text,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Please enter ID';
+              }
+              return null;
+            },
           ),
-          const SizedBox(height: 16),
-          AppTextField(
+          const SizedBox(height: 18),
+
+          // 2. Password Field
+          LoginInputField(
             controller: _passwordController,
-            label: 'Password',
-            hint: 'Enter your password',
+            labelText: 'Password*',
             obscureText: _obscurePassword,
-            prefixIcon: const Icon(Icons.lock_outline, size: 20),
             suffixIcon: IconButton(
               icon: Icon(
                 _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                size: 20,
+                size: 22,
+                color: const Color(0xFF334155),
               ),
-              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+              onPressed: () {
+                setState(() => _obscurePassword = !_obscurePassword);
+              },
             ),
-            validator: (v) => (v == null || v.isEmpty) ? 'Please enter password' : null,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Please enter password';
+              }
+              return null;
+            },
           ),
-          if (widget.viewModel.errorMessage != null) ...[
-            const SizedBox(height: 10),
-            Text(
-              widget.viewModel.errorMessage!,
-              style: const TextStyle(color: Colors.red, fontSize: 12),
+          const SizedBox(height: 20),
+
+          // 3. Log In Button
+          SizedBox(
+            height: 44,
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _handleLogin,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                elevation: 2,
+                shadowColor: AppColors.primary.withAlpha(120),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+              ),
+              child: _isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.admin_panel_settings,
+                          size: 20,
+                          color: Colors.white,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Log In',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.3,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
             ),
-          ],
-          const SizedBox(height: 24),
-          AppButton(
-            text: 'Sign In',
-            isLoading: widget.viewModel.isLoading,
-            onPressed: _submit,
           ),
         ],
       ),

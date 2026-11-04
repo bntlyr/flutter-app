@@ -1,34 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../../../app.dart';
-import '../viewmodels/login_viewmodel.dart';
-import '../components/auth_header.dart';
+import '../components/auth_banner.dart';
 import '../components/login_form.dart';
 
-/// User Login Page.
-class LoginPage extends StatefulWidget {
+/// User Login Page featuring top dark banner with PayrollNeo logo
+/// and bottom outline login form.
+class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
-  @override
-  State<LoginPage> createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
-  late final LoginViewModel _viewModel;
-
-  @override
-  void initState() {
-    super.initState();
-    _viewModel = LoginViewModel();
-    _viewModel.addListener(() => setState(() {}));
-  }
-
-  @override
-  void dispose() {
-    _viewModel.dispose();
-    super.dispose();
-  }
-
-  void _onSuccess() {
+  void _onSuccess(BuildContext context) {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => const MainNavigationScreen()),
     );
@@ -36,29 +16,34 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final bannerHeight = (screenHeight * 0.28).clamp(180.0, 240.0);
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const AuthHeader(
-                    title: 'Welcome to PayrollNeo',
-                    subtitle: 'Sign in to access your attendance, payslips, and requests',
+        top: false,
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // 1. Top Dark Banner with PayrollNeo Logo
+              AuthBanner(height: bannerHeight),
+
+              // 2. Form Body
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 36),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 380),
+                    child: LoginForm(
+                      onLoginSuccess: () => _onSuccess(context),
+                    ),
                   ),
-                  const SizedBox(height: 32),
-                  LoginForm(
-                    viewModel: _viewModel,
-                    onLoginSuccess: _onSuccess,
-                  ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),

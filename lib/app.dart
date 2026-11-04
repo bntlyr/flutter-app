@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'services/notification_service.dart';
+import 'features/auth/presentation/pages/login_page.dart';
 import 'features/dtr/dtr_screen.dart';
 import 'features/payslip/payslip_screen.dart';
 import 'features/personal/personal_screen.dart';
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
         physics: const BouncingScrollPhysics(),
       ),
       home: const SplashScreen(
-        nextScreen: MainNavigationScreen(),
+        nextScreen: LoginPage(),
       ),
     );
   }
@@ -167,6 +168,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             icon: const Icon(Icons.account_circle_outlined, color: Colors.white),
             tooltip: 'View Profile',
             onPressed: () => _navigateToTab(5),
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            tooltip: 'Log Out',
+            onPressed: () {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const LoginPage()),
+                (route) => false,
+              );
+            },
           ),
           const SizedBox(width: 4),
         ],

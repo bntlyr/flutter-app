@@ -49,6 +49,30 @@ class _DtrDateCarouselState extends State<DtrDateCarousel> {
   }
 
   @override
+  void didUpdateWidget(DtrDateCarousel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.selectedIndex != widget.selectedIndex ||
+        oldWidget.days != widget.days) {
+      _scrollToIndex(widget.selectedIndex);
+    }
+  }
+
+  void _scrollToIndex(int index) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+      final target = (index * 48.0 - 80.0).clamp(
+        0.0,
+        _scrollController.position.maxScrollExtent,
+      );
+      _scrollController.animateTo(
+        target,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
+  @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
@@ -123,6 +147,7 @@ class _DtrDateCarouselState extends State<DtrDateCarousel> {
                     : (isSaturday ? saturdayBlue : const Color(0xFF334155));
 
                 return GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onTap: () => widget.onDaySelected(index),
                   child: Container(
                     width: 44,

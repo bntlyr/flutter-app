@@ -13,6 +13,11 @@ void main() {
     // Fast-forward past splash duration
     await tester.pumpAndSettle(const Duration(milliseconds: 2500));
 
+    // Verify Login Screen and tap Log In
+    expect(find.text('Log In'), findsOneWidget);
+    await tester.tap(find.text('Log In'));
+    await tester.pumpAndSettle(const Duration(milliseconds: 500));
+
     // 1. Verify Portal Tab
     expect(find.text('Attendance Summary'), findsOneWidget);
     expect(find.text('Attendance Alert'), findsOneWidget);
@@ -161,5 +166,10 @@ void main() {
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
     expect(find.text(MockProfileData.profile.fullName), findsAtLeastNWidgets(1));
+
+    // 8. Tap Logout in AppBar actions -> returns to Login screen
+    await tester.tap(find.byIcon(Icons.logout));
+    await tester.pumpAndSettle();
+    expect(find.text('Log In'), findsOneWidget);
   });
 }

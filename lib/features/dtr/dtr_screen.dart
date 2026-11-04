@@ -14,11 +14,32 @@ import 'components/dtr_summary_card.dart';
 ///   Day Rate Compensations, Night Rate Compensations, Allowances)
 class DtrScreen extends StatefulWidget {
   final Function(int targetIndex)? onNavigateToTab;
+  final String? initialCutoff;
 
   const DtrScreen({
     super.key,
     this.onNavigateToTab,
+    this.initialCutoff,
   });
+
+  /// Computes the active payroll cut-off dynamically based on date.
+  /// 1st to 15th: 1st half of month
+  /// 16th to end: 2nd half of month
+  static String getDefaultCutoff([DateTime? date]) {
+    final now = date ?? DateTime.now();
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    final monthStr = months[now.month - 1];
+    final year = now.year;
+    if (now.day <= 15) {
+      return '$monthStr-01-$year – $monthStr-15-$year';
+    } else {
+      final lastDay = DateTime(now.year, now.month + 1, 0).day;
+      return '$monthStr-16-$year – $monthStr-$lastDay-$year';
+    }
+  }
 
   @override
   State<DtrScreen> createState() => _DtrScreenState();
@@ -27,16 +48,21 @@ class DtrScreen extends StatefulWidget {
 class _DtrScreenState extends State<DtrScreen> {
   late String _cutoffText;
   late DtrCutoffData _cutoffData;
-  int _selectedDayIndex = 3; // Default to Oct 19
+  int _selectedDayIndex = 0;
   bool _isRefreshing = false;
 
   @override
   void initState() {
     super.initState();
-    _cutoffText = 'Oct-16-26 — Oct-31-26';
+    _cutoffText = widget.initialCutoff ?? DtrScreen.getDefaultCutoff();
     _cutoffData = DtrSampleData.getCutoff(_cutoffText);
-    // Find default day (Oct 19) or default to 0
-    final foundIndex = _cutoffData.days.indexWhere((d) => d.date.day == 19);
+    final now = DateTime.now();
+    final foundIndex = _cutoffData.days.indexWhere(
+      (d) =>
+          d.date.year == now.year &&
+          d.date.month == now.month &&
+          d.date.day == now.day,
+    );
     _selectedDayIndex = foundIndex >= 0 ? foundIndex : 0;
   }
 
