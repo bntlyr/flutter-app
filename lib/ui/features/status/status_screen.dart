@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../shared/widgets/calendar/calendar_date.dart';
-import '../../shared/widgets/request/request_modal_dialog.dart';
-import '../../shared/widgets/request/request_view_dialog.dart';
+import '../../shared/widgets/request/request-modal/request_modal_dialog.dart';
+import '../../shared/widgets/request/request-view/request_view_dialog.dart';
 
 class RequestItem {
   final String id;

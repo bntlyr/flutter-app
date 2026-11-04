@@ -28,7 +28,8 @@ class ModalMapDialog extends StatefulWidget {
     this.customUrl,
   });
 
-  /// Static helper to display the ModalMapDialog
+  /// Static helper to display the ModalMapDialog as a fullscreen route
+  /// sliding in from right to left (mobile style).
   static Future<T?> show<T>({
     required BuildContext context,
     String title = 'Map',
@@ -41,23 +42,29 @@ class ModalMapDialog extends StatefulWidget {
     bool useFreeLink = false,
     String? customUrl,
   }) {
-    return showModalBottomSheet<T>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black54,
-      isDismissible: true,
-      enableDrag: true,
-      builder: (ctx) => ModalMapDialog(
-        title: title,
-        locationTitle: locationTitle,
-        address: address,
-        latitude: latitude,
-        longitude: longitude,
-        zoom: zoom,
-        useFreeLink: useFreeLink,
-        customUrl: customUrl,
+    return Navigator.of(context, rootNavigator: true).push<T>(
+      PageRouteBuilder<T>(
+        pageBuilder: (ctx, animation, secondaryAnimation) => ModalMapDialog(
+          title: title,
+          locationTitle: locationTitle,
+          address: address,
+          latitude: latitude,
+          longitude: longitude,
+          zoom: zoom,
+          useFreeLink: useFreeLink,
+          customUrl: customUrl,
+        ),
+        transitionsBuilder: (ctx, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          const curve = Curves.easeInOut;
+          final tween =
+              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          return SlideTransition(
+            position: animation.drive(tween),
+            child: child,
+          );
+        },
       ),
     );
   }
@@ -133,92 +140,85 @@ class _ModalMapDialogState extends State<ModalMapDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final mediaQuery = MediaQuery.of(context);
-
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: mediaQuery.size.height * 0.85,
-      ),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 10,
-            offset: Offset(0, -2),
-          ),
-        ],
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Top Drag Handle Bar
+          // 1. Header Bar: [ Back Arrow ] [ Map ] [ X ]
           Container(
-            color: Colors.white,
-            padding: const EdgeInsets.only(top: 8, bottom: 6),
-            alignment: Alignment.center,
-            child: Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: const Color(0xFFD1D5DB),
-                borderRadius: BorderRadius.circular(2),
+            color: ModalMapDialog._headerTeal,
+            child: SafeArea(
+              bottom: false,
+              child: Container(
+                height: 48,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Row(
+                  children: [
+                    InkWell(
+                      key: const Key('modal_map_close_button'),
+                      onTap: () => Navigator.of(context).pop(),
+                      child: const Padding(
+                        padding: EdgeInsets.all(6),
+                        child: Icon(Icons.arrow_back, color: Colors.white, size: 22),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        widget.title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: const Padding(
+                        padding: EdgeInsets.all(6),
+                        child: Icon(Icons.close, color: Colors.white, size: 20),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-          // 1. Header Bar: [ Map ] [ X ]
-          Container(
-            height: 46,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            color: ModalMapDialog._headerTeal,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+          // 2. Fullscreen WebView Map Area
+          Expanded(
+            child: Stack(
               children: [
-                  Text(
-                    widget.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.2,
+                WebViewWidget(controller: _controller),
+                if (_isLoading)
+                  const Center(
+                    child: CircularProgressIndicator(
+                      color: ModalMapDialog._headerTeal,
+                      strokeWidth: 2.5,
                     ),
                   ),
-                  InkWell(
-                    key: const Key('modal_map_close_button'),
-                    onTap: () => Navigator.of(context).pop(),
-                    child: const Padding(
-                      padding: EdgeInsets.all(4),
-                      child: Icon(Icons.close, color: Colors.white, size: 20),
-                    ),
-                  ),
-                ],
-              ),
+              ],
             ),
+          ),
 
-            // 2. WebView Map Area
-            SizedBox(
-              height: 310,
-              child: Stack(
-                children: [
-                  WebViewWidget(controller: _controller),
-                  if (_isLoading)
-                    const Center(
-                      child: CircularProgressIndicator(
-                        color: ModalMapDialog._headerTeal,
-                        strokeWidth: 2.5,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-
-            // 3. Location Details Box
-            Container(
+          // 3. Location Details Box at Bottom
+          SafeArea(
+            top: false,
+            child: Container(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              color: Colors.white,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 6,
+                    offset: Offset(0, -2),
+                  ),
+                ],
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -243,9 +243,10 @@ class _ModalMapDialogState extends State<ModalMapDialog> {
                 ],
               ),
             ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
   }
 }
 

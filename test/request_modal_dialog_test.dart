@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_app/ui/shared/widgets/request/request_modal_dialog.dart';
+import 'package:flutter_app/ui/shared/widgets/request/request-modal/request_modal_dialog.dart';
 import 'package:flutter_app/ui/features/status/status_screen.dart';
 
 void main() {
@@ -311,6 +311,25 @@ void main() {
       expect(find.text('Work Break Start'), findsOneWidget);
       expect(find.text('Work Break End'), findsOneWidget);
       expect(find.text('Work End'), findsOneWidget);
+
+      // Tap Work Start opens 24-hour time picker
+      await tester.tap(find.text('Work Start'));
+      await tester.pumpAndSettle();
+      expect(find.byType(TimePickerDialog), findsOneWidget);
+      final mediaQuery = tester.widget<MediaQuery>(
+        find.ancestor(
+          of: find.byType(TimePickerDialog),
+          matching: find.byType(MediaQuery),
+        ).first,
+      );
+      expect(mediaQuery.data.alwaysUse24HourFormat, isTrue);
+
+      // Cancel time picker dialog
+      await tester.tap(find.descendant(
+        of: find.byType(TimePickerDialog),
+        matching: find.text('Cancel'),
+      ));
+      await tester.pumpAndSettle();
     });
 
     testWidgets('tapping Add Request on StatusScreen opens RequestModalDialog',
