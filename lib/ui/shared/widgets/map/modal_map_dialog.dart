@@ -41,9 +41,14 @@ class ModalMapDialog extends StatefulWidget {
     bool useFreeLink = false,
     String? customUrl,
   }) {
-    return showDialog<T>(
+    return showModalBottomSheet<T>(
       context: context,
-      barrierDismissible: true,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black54,
+      isDismissible: true,
+      enableDrag: true,
       builder: (ctx) => ModalMapDialog(
         title: title,
         locationTitle: locationTitle,
@@ -130,28 +135,48 @@ class _ModalMapDialogState extends State<ModalMapDialog> {
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
 
-    return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-      backgroundColor: Colors.white,
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: mediaQuery.size.height * 0.85,
+      ),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 10,
+            offset: Offset(0, -2),
+          ),
+        ],
+      ),
       clipBehavior: Clip.antiAlias,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: 380,
-          maxHeight: mediaQuery.size.height * 0.9,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // 1. Header Bar: [ Map ] [ X ]
-            Container(
-              height: 46,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              color: ModalMapDialog._headerTeal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Top Drag Handle Bar
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.only(top: 8, bottom: 6),
+            alignment: Alignment.center,
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: const Color(0xFFD1D5DB),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          // 1. Header Bar: [ Map ] [ X ]
+          Container(
+            height: 46,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            color: ModalMapDialog._headerTeal,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
                   Text(
                     widget.title,
                     style: const TextStyle(
@@ -220,8 +245,7 @@ class _ModalMapDialogState extends State<ModalMapDialog> {
             ),
           ],
         ),
-      ),
-    );
+      );
   }
 }
 

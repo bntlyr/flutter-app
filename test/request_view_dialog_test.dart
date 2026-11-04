@@ -164,6 +164,12 @@ void main() {
 
       expect(find.text('Pre-Approved'), findsOneWidget);
       expect(find.textContaining('Panisales, Christine Mae'), findsOneWidget);
+
+      // Dismiss via barrier tap
+      await tester.tapAt(const Offset(20, 20));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(RequestViewDialog), findsNothing);
     });
   });
 }

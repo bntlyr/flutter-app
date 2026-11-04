@@ -89,9 +89,14 @@ class RequestModalDialog extends StatefulWidget {
     List<LeaveTypeOption>? leaveTypes,
     List<String>? allowanceOptions,
   }) {
-    return showDialog<T>(
+    return showModalBottomSheet<T>(
       context: context,
-      barrierDismissible: true,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black54,
+      isDismissible: true,
+      enableDrag: true,
       builder: (ctx) => RequestModalDialog(
         title: title,
         initialTypeOfRequest: initialTypeOfRequest,
@@ -536,7 +541,7 @@ class _RequestModalDialogState extends State<RequestModalDialog> {
     return '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
   }
 
-  /// Opens anchored month calendar popover directly underneath the clicked date input.
+  /// Opens responsive centered month calendar dialog easy to view and tap on any device size.
   void _openAnchoredDatePicker({
     required LayerLink link,
     required DateTime? initialDate,
@@ -554,9 +559,12 @@ class _RequestModalDialogState extends State<RequestModalDialog> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setOverlayState) {
+            final mediaQuery = MediaQuery.of(context);
             final firstDayOfMonth = DateTime(currentYear, currentMonth, 1);
             final daysInMonth = DateUtils.getDaysInMonth(currentYear, currentMonth);
             final startWeekday = firstDayOfMonth.weekday % 7; // Sunday = 0
+            final pickerWidth = (mediaQuery.size.width * 0.88).clamp(280.0, 340.0);
+            final monthName = _monthNames[currentMonth - 1];
 
             return Stack(
               children: [
@@ -564,36 +572,44 @@ class _RequestModalDialogState extends State<RequestModalDialog> {
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: _closeAnyOverlay,
-                    child: Container(color: Colors.transparent),
+                    child: Container(color: Colors.black38),
                   ),
                 ),
-                CompositedTransformFollower(
-                  link: link,
-                  showWhenUnlinked: false,
-                  targetAnchor: alignRight ? Alignment.bottomRight : Alignment.bottomLeft,
-                  followerAnchor: alignRight ? Alignment.topRight : Alignment.topLeft,
-                  offset: const Offset(0, 4),
+                Center(
                   child: Material(
-                    elevation: 8,
-                    shadowColor: Colors.black26,
-                    borderRadius: BorderRadius.circular(4),
+                    elevation: 12,
+                    shadowColor: Colors.black38,
+                    borderRadius: BorderRadius.circular(12),
                     color: Colors.white,
                     child: Container(
-                      width: 250,
-                      padding: const EdgeInsets.all(10),
+                      width: pickerWidth,
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: const Color(0xFFE0E0E0)),
                       ),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Header: < [ 2026 v ] >
+                          // Header: [ << ] [ < ]  Month Year  [ > ] [ >> ]
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               InkWell(
+                                borderRadius: BorderRadius.circular(16),
+                                onTap: () {
+                                  setOverlayState(() {
+                                    currentYear--;
+                                  });
+                                },
+                                child: const Padding(
+                                  padding: EdgeInsets.all(4),
+                                  child: Icon(Icons.keyboard_double_arrow_left,
+                                      size: 20, color: Color(0xFF616161)),
+                                ),
+                              ),
+                              InkWell(
+                                borderRadius: BorderRadius.circular(16),
                                 onTap: () {
                                   setOverlayState(() {
                                     if (currentMonth == 1) {
@@ -606,33 +622,35 @@ class _RequestModalDialogState extends State<RequestModalDialog> {
                                 },
                                 child: const Padding(
                                   padding: EdgeInsets.all(4),
-                                  child: Icon(Icons.chevron_left, size: 20, color: Color(0xFF616161)),
+                                  child: Icon(Icons.chevron_left,
+                                      size: 22, color: Color(0xFF424242)),
                                 ),
                               ),
-                              Container(
-                                height: 26,
-                                padding: const EdgeInsets.symmetric(horizontal: 10),
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: _headerTeal, width: 1.2),
-                                  borderRadius: BorderRadius.circular(3),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      '$currentYear',
+                              Expanded(
+                                child: Center(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFE2F4F4)
+                                          .withValues(alpha: 0.6),
+                                      border: Border.all(
+                                          color: _headerTeal, width: 1.2),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      '$monthName $currentYear',
                                       style: const TextStyle(
-                                        fontSize: 12,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.bold,
                                         color: Color(0xFF212121),
                                       ),
                                     ),
-                                    const SizedBox(width: 4),
-                                    const Icon(Icons.arrow_drop_down, size: 16, color: _headerTeal),
-                                  ],
+                                  ),
                                 ),
                               ),
                               InkWell(
+                                borderRadius: BorderRadius.circular(16),
                                 onTap: () {
                                   setOverlayState(() {
                                     if (currentMonth == 12) {
@@ -645,16 +663,29 @@ class _RequestModalDialogState extends State<RequestModalDialog> {
                                 },
                                 child: const Padding(
                                   padding: EdgeInsets.all(4),
-                                  child: Icon(Icons.chevron_right, size: 20, color: Color(0xFF616161)),
+                                  child: Icon(Icons.chevron_right,
+                                      size: 22, color: Color(0xFF424242)),
+                                ),
+                              ),
+                              InkWell(
+                                borderRadius: BorderRadius.circular(16),
+                                onTap: () {
+                                  setOverlayState(() {
+                                    currentYear++;
+                                  });
+                                },
+                                child: const Padding(
+                                  padding: EdgeInsets.all(4),
+                                  child: Icon(Icons.keyboard_double_arrow_right,
+                                      size: 20, color: Color(0xFF616161)),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 12),
 
                           // Days of Week Header
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: const [
                               _WeekdayCell('Su'),
                               _WeekdayCell('Mo'),
@@ -665,17 +696,18 @@ class _RequestModalDialogState extends State<RequestModalDialog> {
                               _WeekdayCell('Sa'),
                             ],
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 8),
 
                           // Days Grid
                           GridView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: startWeekday + daysInMonth,
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 7,
-                              mainAxisSpacing: 2,
-                              crossAxisSpacing: 2,
+                              mainAxisSpacing: 4,
+                              crossAxisSpacing: 4,
                               childAspectRatio: 1,
                             ),
                             itemBuilder: (context, index) {
@@ -683,40 +715,90 @@ class _RequestModalDialogState extends State<RequestModalDialog> {
                                 return const SizedBox.shrink();
                               }
                               final day = index - startWeekday + 1;
-                              final date = DateTime(currentYear, currentMonth, day);
+                              final date =
+                                  DateTime(currentYear, currentMonth, day);
                               final isSelected = selectedDate != null &&
                                   selectedDate.year == currentYear &&
                                   selectedDate.month == currentMonth &&
                                   selectedDate.day == day;
+                              final isToday = now.year == currentYear &&
+                                  now.month == currentMonth &&
+                                  now.day == day;
 
                               return InkWell(
+                                borderRadius: BorderRadius.circular(16),
                                 onTap: () {
                                   onSelected(date);
                                   _closeAnyOverlay();
                                 },
                                 child: Center(
                                   child: Container(
-                                    width: 26,
-                                    height: 26,
+                                    width: 30,
+                                    height: 30,
                                     alignment: Alignment.center,
                                     decoration: isSelected
-                                        ? BoxDecoration(
+                                        ? const BoxDecoration(
                                             shape: BoxShape.circle,
-                                            border: Border.all(color: _headerTeal, width: 1.5),
+                                            color: _headerTeal,
                                           )
-                                        : null,
+                                        : isToday
+                                            ? BoxDecoration(
+                                                shape: BoxShape.circle,
+                                                border: Border.all(
+                                                    color: _headerTeal,
+                                                    width: 1.4),
+                                              )
+                                            : null,
                                     child: Text(
                                       '$day',
                                       style: TextStyle(
-                                        fontSize: 11,
-                                        color: isSelected ? _headerTeal : const Color(0xFF212121),
-                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                        fontSize: 12,
+                                        color: isSelected
+                                            ? Colors.white
+                                            : isToday
+                                                ? _headerTeal
+                                                : const Color(0xFF212121),
+                                        fontWeight: isSelected || isToday
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
                                       ),
                                     ),
                                   ),
                                 ),
                               );
                             },
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Footer: [ Cancel ]   [ Today ]
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              TextButton(
+                                onPressed: _closeAnyOverlay,
+                                child: const Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                    color: Color(0xFF757575),
+                                    fontSize: 12.5,
+                                  ),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  onSelected(DateTime(now.year, now.month, now.day));
+                                  _closeAnyOverlay();
+                                },
+                                child: const Text(
+                                  'Today',
+                                  style: TextStyle(
+                                    color: _headerTeal,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12.5,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -977,41 +1059,83 @@ class _RequestModalDialogState extends State<RequestModalDialog> {
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
-    final isKeyboardOpen = mediaQuery.viewInsets.bottom > 0;
+    final bottomInset = mediaQuery.viewInsets.bottom;
+    final isKeyboardOpen = bottomInset > 0;
+    final sheetHeight = isKeyboardOpen
+        ? mediaQuery.size.height * 0.92
+        : (mediaQuery.size.height * 0.85).clamp(520.0, 750.0);
 
-    return Dialog(
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-      backgroundColor: Colors.white,
-      clipBehavior: Clip.antiAlias,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: 420,
-          maxHeight: isKeyboardOpen ? mediaQuery.size.height * 0.9 : 680,
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottomInset),
+      child: Container(
+        height: sheetHeight,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 10,
+              offset: Offset(0, -2),
+            ),
+          ],
         ),
+        clipBehavior: Clip.antiAlias,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Top Drag Handle Bar
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.only(top: 8, bottom: 6),
+              alignment: Alignment.center,
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD1D5DB),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
             // 1. Solid Header Bar
             Container(
-              height: 48,
+              height: 46,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               color: _headerTeal,
-              alignment: Alignment.centerLeft,
-              child: Text(
-                widget.title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.2,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    widget.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                  InkWell(
+                    key: const Key('request_modal_close_button'),
+                    onTap: () {
+                      _closeAnyOverlay();
+                      if (widget.onCancel != null) {
+                        widget.onCancel!();
+                      } else {
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    child: const Padding(
+                      padding: EdgeInsets.all(4),
+                      child: Icon(Icons.close, color: Colors.white, size: 20),
+                    ),
+                  ),
+                ],
               ),
             ),
 
             // 2. Body
-            Flexible(
+            Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
                 child: Column(
@@ -1155,7 +1279,7 @@ class _RequestModalDialogState extends State<RequestModalDialog> {
 
             // 3. Footer: [ Cancel ]   [ Submit ]
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+              padding: EdgeInsets.fromLTRB(16, 10, 16, 16 + mediaQuery.padding.bottom),
               child: Row(
                 children: [
                   Expanded(
@@ -2159,13 +2283,12 @@ class _WeekdayCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 26,
+    return Expanded(
       child: Text(
         text,
         textAlign: TextAlign.center,
         style: const TextStyle(
-          fontSize: 10,
+          fontSize: 11,
           fontWeight: FontWeight.bold,
           color: Color(0xFF757575),
         ),
