@@ -14,7 +14,9 @@ A mobile-first Employee Self-Service (ESS) application built with Flutter & Mate
 - [Application Overview & Features](#application-overview--features)
 - [System Requirements & What to Install](#system-requirements--what-to-install)
 - [Quick Start / First-Time Setup](#quick-start--first-time-setup)
+- [One-Shot Runner (`run.sh`)](#one-shot-runner-runsh)
 - [Running the Application](#running-the-application)
+- [GraphQL Codegen Scripts](#graphql-codegen-scripts)
 - [Testing & Quality Assurance](#testing--quality-assurance)
 - [Project Architecture & Structure](#project-architecture--structure)
 - [Design System & UI Invariants](#design-system--ui-invariants)
@@ -112,6 +114,53 @@ flutter doctor
 ```bash
 flutter pub get
 ```
+
+---
+
+## One-Shot Runner (`run.sh`)
+
+Whenever you make changes to the app or backend schema (`npm run dev` in `prod/api-server`), use **`./run.sh`**. It automates the full clean, fetch, codegen, and run cycle in a single command:
+
+```bash
+# Launch on default connected device/emulator
+./run.sh
+
+# Or launch on a specific device target
+./run.sh -d emulator-5554
+./run.sh -d <real_device_id>
+```
+
+**What `./run.sh` does in sequence:**
+1. **Clean**: Wipes build cache, `__generated__/` directories, `*.graphql.dart`, and `schema.graphql`.
+2. **Fetch Schema**: Introspects live GraphQL schema from `$GRAPHQL_URL` (default `http://localhost:4002/graphql`).
+3. **Codegen**: Compiles strongly-typed Dart queries and mutations via `dart run build_runner build`.
+4. **Launch**: Resolves host machine's local Wi-Fi IPv4 address (e.g. `http://192.168.1.153:4002`) and runs `flutter run --dart-define=API_BASE_URL="http://<IP>:4002" "$@"` so real devices connect immediately.
+
+---
+
+## GraphQL Codegen Scripts
+
+If you need to run specific steps manually without launching Flutter:
+
+### Clean Codegen & Schema
+Deletes all generated files, `__generated__/` folders, and `schema.graphql`:
+```bash
+./clean_codegen.sh
+```
+
+### Fetch Schema & Regenerate Dart Classes
+Runs the clean step, pulls fresh schema from `http://localhost:4002/graphql`, and compiles Dart code:
+```bash
+./generate.sh
+```
+
+### Automatic Execution in Android Studio (Before Launch)
+To make Android Studio run `generate.sh` automatically every time you click the green **▶ Run** button:
+1. Go to **Run** → **Edit Configurations...**
+2. Select **main.dart**.
+3. Under **Before launch**, click **`+`** → **Run External Tool**.
+4. Set Program: `/bin/bash`, Arguments: `generate.sh`, Working directory: `$ProjectFileDir$`.
+5. Click **OK** → **Apply**.
 
 ---
 
