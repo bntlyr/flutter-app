@@ -14,6 +14,8 @@ void main() {
           home: Scaffold(
             body: Center(
               child: CalendarDate(
+                initialYear: 2026,
+                initialMonth: 10,
                 onDateRangeSelected: (range) => selectedRange = range,
               ),
             ),
@@ -69,8 +71,14 @@ void main() {
       await tester.pumpAndSettle();
 
       // Overlay closes, Date field updated
+      final now = DateTime.now();
+      const monthNames = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      ];
+      final m = monthNames[now.month - 1];
       expect(find.byType(CalendarDate), findsNothing);
-      expect(find.text('Oct-05-2026 – Oct-20-2026'), findsOneWidget);
+      expect(find.text('$m-05-${now.year} – $m-20-${now.year}'), findsOneWidget);
     });
 
     testWidgets('StatusScreen pagination changes page',

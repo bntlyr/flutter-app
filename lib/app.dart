@@ -114,8 +114,6 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentDest = _destinations[_currentIndex];
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.gray,
@@ -138,42 +136,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
                 );
               },
             ),
-            const SizedBox(width: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.white.withAlpha(25),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                currentDest.label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-            tooltip: 'Attendance & Request Alerts',
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('All notifications are up to date.'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.account_circle_outlined, color: Colors.white),
-            tooltip: 'View Profile',
-            onPressed: () => _navigateToTab(5),
-          ),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
             tooltip: 'Log Out',

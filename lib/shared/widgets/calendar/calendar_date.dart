@@ -16,16 +16,16 @@ class CalendarDate extends StatefulWidget {
   final String? selectedDateRange;
   final ValueChanged<String>? onDateRangeSelected;
   final VoidCallback? onClose;
-  final int initialYear;
-  final int initialMonth;
+  final int? initialYear;
+  final int? initialMonth;
 
   const CalendarDate({
     super.key,
     this.selectedDateRange,
     this.onDateRangeSelected,
     this.onClose,
-    this.initialYear = 2026,
-    this.initialMonth = 10,
+    this.initialYear,
+    this.initialMonth,
   });
 
   @override
@@ -59,8 +59,9 @@ class _CalendarDateState extends State<CalendarDate> {
   @override
   void initState() {
     super.initState();
-    _year = widget.initialYear;
-    _month = widget.initialMonth;
+    final now = DateTime.now();
+    _year = widget.initialYear ?? now.year;
+    _month = widget.initialMonth ?? now.month;
     _yearPageStart = 2016 + (((_year - 2016) / 24).floor() * 24);
     _parseDateRange(widget.selectedDateRange);
   }
@@ -90,7 +91,9 @@ class _CalendarDateState extends State<CalendarDate> {
         );
         if (mIdx != -1) _month = mIdx + 1;
         _confirmedStart = int.tryParse(startDayStr);
-        _year = int.tryParse(startYearStr) ?? widget.initialYear;
+        int? parsedYr = int.tryParse(startYearStr);
+        if (parsedYr != null && parsedYr < 100) parsedYr += 2000;
+        _year = parsedYr ?? widget.initialYear ?? DateTime.now().year;
         _confirmedEnd = int.tryParse(endDayStr);
       } else {
         _confirmedStart = null;

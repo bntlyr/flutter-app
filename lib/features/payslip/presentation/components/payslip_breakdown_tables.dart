@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/core/theme/app_colors.dart';
+import '../../domain/entities/payslip_entity.dart';
 
 enum PayrollDetailOption {
   basicPay('Basic Pay'),
@@ -18,8 +18,27 @@ enum PayrollDetailOption {
 
 class PayslipBreakdownTables extends StatelessWidget {
   final PayrollDetailOption option;
+  final PayslipEntity? payslip;
 
-  const PayslipBreakdownTables({super.key, required this.option});
+  const PayslipBreakdownTables({
+    super.key,
+    required this.option,
+    this.payslip,
+  });
+
+  static String _format(double val) {
+    final parts = val.abs().toStringAsFixed(2).split('.');
+    final integerPart = parts[0];
+    final decimalPart = parts[1];
+    final buffer = StringBuffer();
+    for (int i = 0; i < integerPart.length; i++) {
+      if (i > 0 && (integerPart.length - i) % 3 == 0) {
+        buffer.write(',');
+      }
+      buffer.write(integerPart[i]);
+    }
+    return '${val < 0 ? '-' : ''}${buffer.toString()}.$decimalPart';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,89 +66,203 @@ class PayslipBreakdownTables extends StatelessWidget {
 
   // Table 1: Basic Pay
   Widget _buildBasicPayTable() {
+    final p = payslip;
+    final isDaily = p?.payrollAgreement == 'Daily Basis';
+    final workDays = p?.workDays ?? 0.0;
+    final dailyRate = p?.dailyRate ?? 0.0;
+    final leaveCount = p?.leaveCount ?? 0.0;
+    final basicPay = p?.basicPay ?? 0.0;
+
     return _buildBorderedContainer(
       child: Column(
         children: [
           _buildTableHeader(const ['Basic Pay', 'Days', 'Rate', 'Total'], flexes: const [5, 2, 3, 3]),
-          _buildTableRow(const ['Actual Worked Days', '11.0', '695.76', '7,653.36'], flexes: const [5, 2, 3, 3]),
-          _buildTableRow(const ['Leave w/ pay', '1.0', '695.76', '695.76'], flexes: const [5, 2, 3, 3]),
-          _buildTableFooter('Total Basic Pay', 'Php 8,349.12'),
+          _buildTableRow([
+            'Actual Worked Days',
+            workDays.toStringAsFixed(1),
+            isDaily ? _format(dailyRate) : '--',
+            isDaily ? _format(workDays * dailyRate) : '--',
+          ], flexes: const [5, 2, 3, 3]),
+          _buildTableRow([
+            'Leave w/ pay',
+            leaveCount.toStringAsFixed(1),
+            isDaily ? _format(dailyRate) : '--',
+            isDaily ? _format(leaveCount * dailyRate) : '--',
+          ], flexes: const [5, 2, 3, 3]),
+          _buildTableFooter('Total Basic Pay', 'Php ${_format(basicPay)}'),
         ],
       ),
     );
   }
 
+  static const _compGroups = [
+    (
+      'Regular Holidays Pay',
+      [
+        ('For Regular', 'rh', 1.0, 1.0),
+      ],
+    ),
+    (
+      'Rest And Holidays Pay - Daytime',
+      [
+        ('Rest Day', 'rd', 1.3, 1.3),
+        ('Special Holiday', 'sh', 1.3, 0.3),
+        ('Special Holiday & Rest Day', 'shAndRd', 1.5, 1.5),
+        ('For Legal', 'lh', 1.0, 1.0),
+        ('Legal Holiday & Rest Day', 'lhAndRd', 2.6, 2.6),
+      ],
+    ),
+    (
+      'Overtime And Excess Pay - Daytime',
+      [
+        ('Overtime', 'rot', 1.25, 1.25),
+        ('Rest Day. Excess', 'rdExcess', 1.69, 1.69),
+        ('Special Holiday. Excess', 'shExcess', 1.69, 1.69),
+        ('Special Holiday & Rest Day. Excess', 'shAndRdExcess', 1.95, 1.95),
+        ('Legal Holiday. Excess', 'lhExcess', 2.6, 2.6),
+        ('Legal Holiday & Rest Day. Excess', 'lhAndRdExcess', 3.38, 3.38),
+      ],
+    ),
+    (
+      'Night Differential Pay',
+      [
+        ('Regular', 'regNd', 0.1, 0.1),
+      ],
+    ),
+    (
+      'Rest And Holidays Pay - ND',
+      [
+        ('Rest Day', 'rdNd', 0.13, 0.13),
+        ('Special Holiday', 'shNd', 0.13, 0.13),
+        ('Special Holiday & Rest Day', 'shAndRdNd', 0.15, 0.15),
+        ('Legal Holiday', 'lhNd', 0.2, 0.2),
+        ('Legal Holiday & Rest Day', 'lhAndRdNd', 0.26, 0.26),
+      ],
+    ),
+    (
+      'Overtime And Excess Pay - ND',
+      [
+        ('Regular. Excess', 'regNdExcess', 1.375, 1.375),
+        ('Rest Day. Excess', 'rdNdExcess', 1.859, 1.859),
+        ('Special Holiday. Excess', 'shNdExcess', 1.859, 1.859),
+        ('Special Holiday & Rest Day. Excess', 'shAndRdNdExcess', 2.145, 2.145),
+        ('Legal Holiday. Excess', 'lhNdExcess', 2.86, 2.86),
+        ('Legal Holiday & Rest Day. Excess', 'lhAndRdNdExcess', 3.718, 3.718),
+      ],
+    ),
+  ];
+
   // Table 2: Compensation
   Widget _buildCompensationTable() {
+    final p = payslip;
+    final isDaily = p?.payrollAgreement == 'Daily Basis';
+    final baseHourly = (p?.hourlyRate ?? 0) > 0
+        ? p!.hourlyRate
+        : ((p?.dailyRate ?? 0) > 0 ? p!.dailyRate / 8 : 176.75);
+    final comp = p?.compensation ?? 0.0;
+    final otAdj = p?.overtimeAdjustment ?? 0.0;
+
+    final rows = <Widget>[
+      _buildTableHeader(const ['Compensation', 'Hrs (Day)', 'Rate', 'Total'], flexes: const [5, 3, 3, 3]),
+    ];
+
+    for (final group in _compGroups) {
+      rows.add(_buildSectionBanner(group.$1));
+      for (final item in group.$2) {
+        final title = item.$1;
+        final key = item.$2;
+        final mult = isDaily ? item.$3 : item.$4;
+        final rate = baseHourly * mult;
+
+        double hours = p?.overtimeHours[key] ?? 0.0;
+        double total = p?.overtimeAmounts[key] ?? 0.0;
+
+        if (key == 'rot' && hours == 0.0 && total == 0.0 && comp > 0) {
+          total = comp;
+          hours = rate > 0 ? (total / rate) : 0.0;
+        }
+
+        final hoursText = (title == 'For Regular' && hours >= 8)
+            ? '(${(hours / 8).toStringAsFixed(2)})'
+            : hours.toStringAsFixed(2);
+        final rateText = (title == 'For Regular' && hours >= 8)
+            ? _format(rate * 8)
+            : _format(rate);
+
+        rows.add(
+          _buildTableRow([
+            title,
+            hoursText,
+            rateText,
+            _format(total),
+          ], flexes: const [5, 3, 3, 3]),
+        );
+      }
+    }
+
+    rows.add(_buildSectionBanner('Adjustment'));
+    rows.add(
+      _buildTableRow([
+        'Adjustment for Compensation',
+        '--',
+        '--',
+        _format(otAdj),
+      ], flexes: const [5, 3, 3, 3]),
+    );
+    rows.add(_buildTableFooter('Total Compensation', 'Php ${_format(comp)}'));
+
     return _buildBorderedContainer(
-      child: Column(
-        children: [
-          _buildTableHeader(const ['Compensation', 'Hrs (Day)', 'Rate', 'Total'], flexes: const [5, 2, 2, 3]),
-          _buildSectionSubHeader('Regular Holidays Pay', bgColor: AppColors.primary),
-          _buildTableRow(const ['For Regular', '0.00', '86.97', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildSectionSubHeader('Rest And Holidays Pay - Daytime', bgColor: AppColors.primary),
-          _buildTableRow(const ['Rest Day', '0.00', '113.06', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['Special Holiday', '0.00', '113.06', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['Special Holiday & Rest Day', '0.00', '130.45', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['For Legal', '0.00', '86.97', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['Legal Holiday & Rest Day', '0.00', '226.12', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildSectionSubHeader('Overtime And Excess Pay - Daytime', bgColor: AppColors.primary),
-          _buildTableRow(const ['Overtime', '19.00', '108.71', '2,065.54'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['Rest Day. Excess', '0.00', '146.98', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['Special Holiday. Excess', '0.00', '146.98', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['Special Holiday & Rest Day. Excess', '0.00', '169.59', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['Legal Holiday. Excess', '0.00', '226.12', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['Legal Holiday & Rest Day. Excess', '0.00', '293.96', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildSectionSubHeader('Rest And Holidays Pay - ND', bgColor: const Color(0xFF5677AA)),
-          _buildTableRow(const ['Rest Day', '0.00', '11.31', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['Special Holiday', '0.00', '11.31', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['Special Holiday & Rest Day', '0.00', '13.05', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['Legal Holiday', '0.00', '17.39', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['Legal Holiday & Rest Day', '0.00', '22.61', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildSectionSubHeader('Overtime And Excess Pay - ND', bgColor: const Color(0xFF5677AA)),
-          _buildTableRow(const ['Regular. Excess', '9.00', '119.58', '1,076.25'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['Rest Day. Excess', '0.00', '161.68', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['Special Holiday. Excess', '0.00', '161.68', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['Special Holiday & Rest Day. Excess', '0.00', '186.55', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['Legal Holiday. Excess', '0.00', '248.73', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['Legal Holiday & Rest Day. Excess', '0.00', '323.35', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildSectionSubHeader('Adjustment', bgColor: const Color(0xFFE2E8F0), textColor: Colors.black87),
-          _buildTableRow(const ['Adjustment for Compensation', '--', '--', '0.0'], flexes: const [5, 2, 2, 3]),
-          _buildTableFooter('Total Compensations', 'Php 3,402.70'),
-        ],
+      child: Column(children: rows),
+    );
+  }
+
+  Widget _buildSectionBanner(String title) {
+    Color bg = const Color(0xFF4BA5A5);
+    Color text = Colors.white;
+    if (title == 'Adjustment') {
+      bg = const Color(0xFFE1E1E1);
+      text = const Color(0xFF1E293B);
+    } else if (title.contains('Night Differential') || title.contains('ND')) {
+      bg = const Color(0xFF5677AA);
+    }
+    return Container(
+      width: double.infinity,
+      color: bg,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      child: Text(
+        title,
+        style: TextStyle(
+          color: text,
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+        ),
       ),
     );
   }
 
   // Table 3: Allowance
   Widget _buildAllowanceTable() {
+    final p = payslip;
+    final taxAllowance = p?.allowanceTaxable ?? 0.0;
+    final total = p?.totalAllowance != 0.0
+        ? (p?.totalAllowance ?? 0.0)
+        : (taxAllowance + (p?.allowanceNonTaxable ?? 0.0));
+    final items = p?.allowanceItems ?? const [];
+
     return _buildBorderedContainer(
       child: Column(
         children: [
           _buildTableHeader(const ['Allowance', 'Aquisition Type', 'Total'], flexes: const [5, 4, 3]),
-          _buildTableRow(const ['Line Leader', 'Daily Basis', '330.00'], flexes: const [5, 4, 3]),
-          _buildTableRow(const ['Carbon', 'Daily Basis', '0.00'], flexes: const [5, 4, 3]),
-          _buildTableRow(const ['Transportation', 'Daily Basis', '528.00'], flexes: const [5, 4, 3]),
-          _buildTableRow(const ['Special Salary', 'Monthly Fixed', '0.00'], flexes: const [5, 4, 3]),
-          _buildTableRow(const ['Other Benefits', 'Monthly Fixed', '0.00'], flexes: const [5, 4, 3]),
-          _buildTableRow(const ['ISO', 'Monthly Fixed', '0.00'], flexes: const [5, 4, 3]),
-          _buildTableRow(const ['Meal', 'Daily Basis', '341.00'], flexes: const [5, 4, 3]),
-          _buildTableRow(const ['Others', 'Manual', '0.00'], flexes: const [5, 4, 3]),
-          _buildTableRow(const ['Position', 'Monthly Fixed', '0.00'], flexes: const [5, 4, 3]),
-          _buildTableRow(const ['13th Month Bonus', 'n/a', '0.00'], flexes: const [5, 4, 3]),
-          _buildTableRow(const ['Monetized Unused Leaves', 'n/a', '0.00'], flexes: const [5, 4, 3]),
-          _buildTableFooter('Total Allowance', 'Php 1,199.00'),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            color: Colors.white,
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('(Taxable Amount)', style: TextStyle(fontSize: 11, color: Color(0xFF757575))),
-                Text('Php 330.00', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF757575))),
-              ],
-            ),
-          ),
+          if (items.isEmpty)
+            _buildTableRow(const ['No Allowance Items', '--', '0.00'], flexes: const [5, 4, 3])
+          else
+            ...items.map((r) => _buildTableRow([
+                  r.label,
+                  r.acquisitionType,
+                  _format(r.amount),
+                ], flexes: const [5, 4, 3])),
+          _buildTableFooter('Total Allowance', 'Php ${_format(total)}'),
+          _buildTaxableFooter('(Taxable Amount)', 'Php ${_format(taxAllowance)}'),
         ],
       ),
     );
@@ -137,12 +270,13 @@ class PayslipBreakdownTables extends StatelessWidget {
 
   // Table 4: Other Benefit
   Widget _buildOtherBenefitTable() {
+    final other = payslip?.otherBenefit ?? 0.0;
     return _buildBorderedContainer(
       child: Column(
         children: [
           _buildTableHeader(const ['Other Benefit', 'Total'], flexes: const [7, 3]),
-          _buildTableRow(const ['Separation Fee', '0.00'], flexes: const [7, 3]),
-          _buildTableFooter('Total Other Benefit', 'Php 0.00'),
+          _buildTableRow(['Separation Fee', _format(other)], flexes: const [7, 3]),
+          _buildTableFooter('Total Other Benefit', 'Php ${_format(other)}'),
         ],
       ),
     );
@@ -150,15 +284,25 @@ class PayslipBreakdownTables extends StatelessWidget {
 
   // Table 5: Punctuality
   Widget _buildPunctualityTable() {
+    final late = payslip?.punctuality ?? 0.0;
+    final rate = payslip?.hourlyRate ?? 0.0;
+    final hasLate = late > 0 && rate > 0;
+    final hrs = hasLate ? (late / rate) : 0.0;
+
     return _buildBorderedContainer(
       child: Column(
         children: [
-          _buildTableHeader(const ['Punctuality', 'Hrs.', 'Rate', 'Total'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['Undertime', '0.00', '0.00', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['Late', '0.00', '0.00', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['Absences w/o pay', '0.00', '0.00', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildTableRow(const ['Adjustment for Punctuality', '0.00', '0.00', '0.00'], flexes: const [5, 2, 2, 3]),
-          _buildTableFooter('Total Punctuality', 'Php 0.00'),
+          _buildTableHeader(const ['Punctuality', 'Hrs.', 'Rate', 'Total'], flexes: const [5, 3, 3, 3]),
+          _buildTableRow(['Undertime', '0.00', '0.00', '0.00'], flexes: const [5, 3, 3, 3]),
+          _buildTableRow([
+            'Late',
+            hrs.toStringAsFixed(2),
+            hasLate ? _format(rate) : '0.00',
+            _format(late),
+          ], flexes: const [5, 3, 3, 3]),
+          _buildTableRow(['Absences w/o pay', '0.00', '0.00', '0.00'], flexes: const [5, 3, 3, 3]),
+          _buildTableRow(['Adjustment for Punctuality', '0.00', '0.00', '0.00'], flexes: const [5, 3, 3, 3]),
+          _buildTableFooter('Total Punctuality', 'Php ${_format(late)}'),
         ],
       ),
     );
@@ -166,15 +310,22 @@ class PayslipBreakdownTables extends StatelessWidget {
 
   // Table 6: Contribution
   Widget _buildContributionTable() {
+    final p = payslip;
+    final sss = p?.sss ?? 0.0;
+    final providentFund = p?.providentFund ?? 0.0;
+    final phic = p?.phic ?? 0.0;
+    final hdmf = p?.hdmf ?? 0.0;
+    final total = p?.contribution ?? (sss + providentFund + phic + hdmf);
+
     return _buildBorderedContainer(
       child: Column(
         children: [
           _buildTableHeader(const ['Contribution', 'Total'], flexes: const [7, 3]),
-          _buildTableRow(const ['SSS Contribution', '600.00'], flexes: const [7, 3]),
-          _buildTableRow(const ['Provident Fund', '0.00'], flexes: const [7, 3]),
-          _buildTableRow(const ['PHIC', '227.57'], flexes: const [7, 3]),
-          _buildTableRow(const ['HDMF', '100.00'], flexes: const [7, 3]),
-          _buildTableFooter('Total Contribution', 'Php 927.57'),
+          _buildTableRow(['SSS Contribution', _format(sss)], flexes: const [7, 3]),
+          _buildTableRow(['Provident Fund', _format(providentFund)], flexes: const [7, 3]),
+          _buildTableRow(['PHIC', _format(phic)], flexes: const [7, 3]),
+          _buildTableRow(['HDMF', _format(hdmf)], flexes: const [7, 3]),
+          _buildTableFooter('Total Contribution', 'Php ${_format(total)}'),
         ],
       ),
     );
@@ -182,21 +333,19 @@ class PayslipBreakdownTables extends StatelessWidget {
 
   // Table 7: Loan Repayment
   Widget _buildLoanRepaymentTable() {
+    final p = payslip;
+    final items = p?.loanItems ?? const [];
+    final total = p?.loanRepayment ?? 0.0;
+
     return _buildBorderedContainer(
       child: Column(
         children: [
           _buildTableHeader(const ['Loan Repayment', 'Total'], flexes: const [7, 3]),
-          _buildTableRow(const ['SSS Salary Loan', '0.00'], flexes: const [7, 3]),
-          _buildTableRow(const ['SSS Calamity Loan', '0.00'], flexes: const [7, 3]),
-          _buildTableRow(const ['HDMF Salary Loan', '0.00'], flexes: const [7, 3]),
-          _buildTableRow(const ['HDMF Calamity Loan', '0.00'], flexes: const [7, 3]),
-          _buildTableRow(const ['HMO', '0.00'], flexes: const [7, 3]),
-          _buildTableRow(const ['Educational Loan', '0.00'], flexes: const [7, 3]),
-          _buildTableRow(const ['Emergency Loan', '0.00'], flexes: const [7, 3]),
-          _buildTableRow(const ['Meal Charges', '0.00'], flexes: const [7, 3]),
-          _buildTableRow(const ['Shuttle Service', '0.00'], flexes: const [7, 3]),
-          _buildTableRow(const ['Advances', '0.00'], flexes: const [7, 3]),
-          _buildTableFooter('Total Loan Repayment', 'Php 0.00'),
+          if (items.isEmpty)
+            _buildTableRow(const ['No Active Loans', '0.00'], flexes: const [7, 3])
+          else
+            ...items.map((i) => _buildTableRow([i.label, _format(i.amount)], flexes: const [7, 3])),
+          _buildTableFooter('Total Loan Repayment', 'Php ${_format(total)}'),
         ],
       ),
     );
@@ -204,12 +353,13 @@ class PayslipBreakdownTables extends StatelessWidget {
 
   // Table 8: Tax
   Widget _buildTaxTable() {
+    final tax = payslip?.tax ?? 0.0;
     return _buildBorderedContainer(
       child: Column(
         children: [
           _buildTableHeader(const ['Tax', 'Total'], flexes: const [7, 3]),
-          _buildTableRow(const ['Withholding Tax', '0.00'], flexes: const [7, 3]),
-          _buildTableFooter('Total Tax', 'Php 0.00'),
+          _buildTableRow(['Withholding Tax', _format(tax)], flexes: const [7, 3]),
+          _buildTableFooter('Total Tax', 'Php ${_format(tax)}'),
         ],
       ),
     );
@@ -217,13 +367,18 @@ class PayslipBreakdownTables extends StatelessWidget {
 
   // Table 9: Irregular Adjustment
   Widget _buildIrregularAdjustmentTable() {
+    final p = payslip;
+    final adj = p?.adjustment ?? 0.0;
+    final settlement = p?.taxSettlement ?? 0.0;
+    final total = p?.irregularAdjustment ?? (adj + settlement);
+
     return _buildBorderedContainer(
       child: Column(
         children: [
           _buildTableHeader(const ['Irregular Adjustment', 'Total'], flexes: const [7, 3]),
-          _buildTableRow(const ['By manual', '± 0.00'], flexes: const [7, 3]),
-          _buildTableRow(const ['Tax Settlement', '± 0.00'], flexes: const [7, 3]),
-          _buildTableFooter('Total Irregular Adjustment', 'Php 0.00'),
+          _buildTableRow(['By manual', adj != 0 ? _format(adj) : '± 0.00'], flexes: const [7, 3]),
+          _buildTableRow(['Tax Settlement', settlement != 0 ? _format(settlement) : '± 0.00'], flexes: const [7, 3]),
+          _buildTableFooter('Total Irregular Adjustment', 'Php ${_format(total)}'),
         ],
       ),
     );
@@ -260,22 +415,6 @@ class PayslipBreakdownTables extends StatelessWidget {
             ),
           );
         }),
-      ),
-    );
-  }
-
-  Widget _buildSectionSubHeader(String title, {required Color bgColor, Color textColor = Colors.white}) {
-    return Container(
-      width: double.infinity,
-      color: bgColor,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      child: Text(
-        title,
-        style: TextStyle(
-          color: textColor,
-          fontWeight: FontWeight.bold,
-          fontSize: 11.5,
-        ),
       ),
     );
   }
@@ -319,6 +458,26 @@ class PayslipBreakdownTables extends StatelessWidget {
           Text(
             amount,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF1E293B)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTaxableFooter(String label, String amount) {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.only(left: 10, right: 10, bottom: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
+          ),
+          Text(
+            amount,
+            style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B)),
           ),
         ],
       ),

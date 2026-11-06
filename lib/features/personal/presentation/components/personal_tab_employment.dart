@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/core/theme/app_colors.dart';
 import 'package:flutter_app/core/utils/app_formatters.dart';
 import 'package:flutter_app/shared/models/profile_model.dart';
 import 'personal_section_card.dart';
@@ -61,6 +60,7 @@ class PersonalTabEmployment extends StatelessWidget {
 
   Widget _buildEntitlementsList(List<EntitlementGroup> entitlements) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: entitlements.asMap().entries.map((entry) {
         final index = entry.key;
         final item = entry.value;
@@ -68,38 +68,46 @@ class PersonalTabEmployment extends StatelessWidget {
 
         return IntrinsicHeight(
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Left teal timeline indicator
-              Column(
-                children: [
-                  Container(
-                    width: 7,
-                    height: 7,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primary,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  if (!isLast)
-                    Expanded(
+              SizedBox(
+                width: 12,
+                child: Stack(
+                  alignment: Alignment.topCenter,
+                  children: [
+                    if (!isLast)
+                      Align(
+                        alignment: Alignment.topCenter,
+                        child: Container(
+                          width: 2,
+                          margin: const EdgeInsets.only(top: 5),
+                          color: const Color(0xFF80CBC4),
+                        ),
+                      ),
+                    Positioned(
+                      top: 4,
                       child: Container(
-                        width: 1.5,
-                        color: AppColors.primary.withAlpha(90),
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF009688),
+                          shape: BoxShape.circle,
+                        ),
                       ),
                     ),
-                ],
+                  ],
+                ),
               ),
               const SizedBox(width: 12),
               // Entitlement items
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.only(bottom: 14),
+                  padding: EdgeInsets.only(bottom: isLast ? 0 : 20.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildEntitlementCheck(item.primaryLabel, item.isPrimaryChecked),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 10),
                       _buildEntitlementCheck(item.secondaryLabel, item.isSecondaryChecked),
                     ],
                   ),
@@ -116,16 +124,16 @@ class PersonalTabEmployment extends StatelessWidget {
     return Row(
       children: [
         if (isChecked) ...[
-          const Icon(Icons.check, size: 14, color: AppColors.primary),
-          const SizedBox(width: 6),
+          const Icon(Icons.check, size: 16, color: Color(0xFF009688)),
+          const SizedBox(width: 8),
         ] else ...[
-          const SizedBox(width: 20),
+          const SizedBox(width: 24),
         ],
         Text(
           label,
           style: TextStyle(
-            fontSize: 12.5,
-            color: isChecked ? const Color(0xFF1E293B) : const Color(0xFF94A3B8),
+            fontSize: 13,
+            color: isChecked ? const Color(0xFF334155) : const Color(0xFF94A3B8),
             fontWeight: isChecked ? FontWeight.w500 : FontWeight.normal,
           ),
         ),

@@ -14,6 +14,8 @@ void main() {
           home: Scaffold(
             body: Center(
               child: CalendarCutOff(
+                isSemiCutoff: false,
+                showBottomBar: true,
                 selectedCutoff: 'Oct-01-2026 – Oct-15-2026',
                 onCutoffSelected: (range) => selectedCutoff = range,
               ),
@@ -114,6 +116,8 @@ void main() {
           home: Scaffold(
             body: Center(
               child: CalendarCutOff(
+                isSemiCutoff: false,
+                showBottomBar: true,
                 selectedCutoff: 'Oct-01-2026 – Oct-15-2026',
                 onCutoffSelected: (range) => selectedRange = range,
               ),
@@ -153,6 +157,8 @@ void main() {
           home: Scaffold(
             body: Center(
               child: CalendarCutOff(
+                isSemiCutoff: false,
+                showBottomBar: true,
                 selectedCutoff: 'Oct-01-2026 – Oct-15-2026',
                 onCutoffSelected: (range) => selectedRange = range,
               ),
@@ -224,6 +230,79 @@ void main() {
       expect(find.text('NOV'), findsOneWidget);
       expect(find.text('Su'), findsOneWidget);
       expect(find.text('1'), findsOneWidget);
+    });
+
+    testWidgets('semi-cutoff click directly selects 1-15 or 16-end without manual range picking',
+        (WidgetTester tester) async {
+      String? selectedCutoff;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: CalendarCutOff(
+                selectedCutoff: 'Oct-16-2026 – Oct-31-2026',
+                onCutoffSelected: (range) => selectedCutoff = range,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Tap Day 5 (within 1-15) -> selects 1st half of month, then tap Apply
+      await tester.tap(find.text('5'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Apply'));
+      await tester.pumpAndSettle();
+      expect(selectedCutoff, equals('Oct-01-2026 – Oct-15-2026'));
+
+      // Tap Day 20 (within 16-31) -> selects 2nd half of month, then tap Apply
+      await tester.tap(find.text('20'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Apply'));
+      await tester.pumpAndSettle();
+      expect(selectedCutoff, equals('Oct-16-2026 – Oct-31-2026'));
+    });
+
+    testWidgets('clicking left and right chevrons resets the selected range',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: CalendarCutOff(
+                selectedCutoff: 'Oct-01-2026 – Oct-15-2026',
+                onCutoffSelected: (_) {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Oct 1 – 15'), findsOneWidget);
+
+      // Tap `<` (chevron_left) to navigate to September
+      await tester.tap(find.byIcon(Icons.chevron_left));
+      await tester.pumpAndSettle();
+
+      // In September, selected range is reset
+      expect(find.text('SEP'), findsOneWidget);
+      expect(find.text('Oct 1 – 15'), findsNothing);
+      expect(find.text('Sep 1 – 15'), findsNothing);
+
+      // Tap Day 1 in September -> selects Sep 1 – 15
+      await tester.tap(find.text('1'));
+      await tester.pumpAndSettle();
+      expect(find.text('Sep 1 – 15'), findsOneWidget);
+
+      // Tap `>` (chevron_right) to navigate back to October -> resets again
+      await tester.tap(find.byIcon(Icons.chevron_right));
+      await tester.pumpAndSettle();
+      expect(find.text('OCT'), findsOneWidget);
+      expect(find.text('Sep 1 – 15'), findsNothing);
+      expect(find.text('Oct 1 – 15'), findsNothing);
     });
   });
 }

@@ -25,4 +25,10 @@ echo "3. Generating strongly-typed GraphQL Dart classes..."
 dart run build_runner build
 
 echo "4. Launching Flutter app (Host IP: http://${LOCAL_IP}:4002)..."
-flutter run --dart-define=API_BASE_URL="http://${LOCAL_IP}:4002" "$@"
+EXTRA_ARGS=()
+if [ $# -gt 0 ] && [[ "$1" != -* ]] && [ ! -f "$1" ]; then
+  EXTRA_ARGS=("-d" "$1")
+  shift
+fi
+
+flutter run --dart-define=API_BASE_URL="http://${LOCAL_IP}:4002" "${EXTRA_ARGS[@]}" "$@"
