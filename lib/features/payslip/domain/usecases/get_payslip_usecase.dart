@@ -6,7 +6,11 @@ class GetPayslipUseCase {
 
   const GetPayslipUseCase(this.repository);
 
-  Future<PayslipEntity> execute(String cutoff) {
-    return repository.getPayslip(cutoff);
+  Future<PayslipEntity> execute({String? cutoffId, String? cutoffText}) {
+    return repository.getPayslip(cutoffId: cutoffId, cutoffText: cutoffText);
+  }
+
+  Future<List<CutoffOptionEntity>> getCutoffs() {
+    return repository.getCutoffs();
   }
 }

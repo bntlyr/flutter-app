@@ -111,37 +111,8 @@ class _PersonalScheduleScreenState extends State<PersonalScheduleScreen> {
                       );
                     },
                   ),
-                  const SizedBox(width: 10),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(25),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: const Text(
-                      'Personal',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
                 ],
               ),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-                  tooltip: 'Notifications',
-                  onPressed: () {},
-                ),
-                IconButton(
-                  icon: const Icon(Icons.account_circle_outlined, color: Colors.white),
-                  tooltip: 'Profile',
-                  onPressed: () {},
-                ),
-                const SizedBox(width: 4),
-              ],
             ),
             Container(
               height: 46,

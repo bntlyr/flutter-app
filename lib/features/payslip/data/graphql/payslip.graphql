@@ -1,0 +1,61 @@
+query PayslipCutOffs {
+  me {
+    id
+    username
+  }
+  cutOffs {
+    id
+    timeStart
+    timeEnd
+    payrollPeriod
+    status
+    payrollApproved
+  }
+}
+
+query PayrollDetail($filter: payslipFilter!) {
+  payroll(filter: $filter) {
+    id
+    userId
+    cutOffId
+    basicPay
+    gross
+    overtime
+    late
+    sss
+    providentFund
+    phic
+    hdmf
+    taxableAmount
+    totalWht
+    taxableAllowance
+    allowance
+    adjustment
+    taxSettlement
+    netPay
+    metadata
+    salaryType
+    rate
+    workDays
+    leaveCount
+    holidayCount
+    separationPay
+    deductions
+    info {
+      id
+      userId
+      firstName
+      lastName
+      basicSalary
+      salaryType
+      user {
+        id
+        name
+        company {
+          id
+          metadata
+        }
+      }
+    }
+  }
+}

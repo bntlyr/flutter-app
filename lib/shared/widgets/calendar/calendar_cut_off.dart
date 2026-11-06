@@ -16,6 +16,8 @@ class CalendarCutOff extends StatefulWidget {
   final int? initialYear;
   final int? initialMonth;
   final String? selectedCutoff;
+  final bool isSemiCutoff;
+  final bool showBottomBar;
 
   const CalendarCutOff({
     super.key,
@@ -24,6 +26,8 @@ class CalendarCutOff extends StatefulWidget {
     this.onClose,
     this.initialYear,
     this.initialMonth,
+    this.isSemiCutoff = true,
+    this.showBottomBar = true,
   });
 
   /// Dynamically computes active cutoff based on date.
@@ -125,13 +129,22 @@ class _CalendarCutOffState extends State<CalendarCutOff> {
 
   String _twoDigits(int n) => n.toString().padLeft(2, '0');
 
+  void _resetSelection() {
+    _confirmedStart = null;
+    _confirmedEnd = null;
+    _selectStart = null;
+    _candidateEnd = null;
+    _hoveredDay = null;
+    _isSelecting = false;
+  }
+
   void _prevNav() {
     setState(() {
       if (_viewMode == CalendarViewMode.years) {
         _yearPageStart -= 24;
       } else if (_viewMode == CalendarViewMode.months) {
         _year--;
-        _clampRangeToMonth();
+        _resetSelection();
       } else {
         if (_month == 1) {
           _month = 12;
@@ -139,7 +152,7 @@ class _CalendarCutOffState extends State<CalendarCutOff> {
         } else {
           _month--;
         }
-        _clampRangeToMonth();
+        _resetSelection();
       }
     });
   }
@@ -150,7 +163,7 @@ class _CalendarCutOffState extends State<CalendarCutOff> {
         _yearPageStart += 24;
       } else if (_viewMode == CalendarViewMode.months) {
         _year++;
-        _clampRangeToMonth();
+        _resetSelection();
       } else {
         if (_month == 12) {
           _month = 1;
@@ -158,7 +171,7 @@ class _CalendarCutOffState extends State<CalendarCutOff> {
         } else {
           _month++;
         }
-        _clampRangeToMonth();
+        _resetSelection();
       }
     });
   }
@@ -166,7 +179,7 @@ class _CalendarCutOffState extends State<CalendarCutOff> {
   void _onYearTapped(int year) {
     setState(() {
       _year = year;
-      _clampRangeToMonth();
+      _resetSelection();
       _viewMode = CalendarViewMode.months;
     });
   }
@@ -174,22 +187,28 @@ class _CalendarCutOffState extends State<CalendarCutOff> {
   void _onMonthTapped(int month) {
     setState(() {
       _month = month;
-      _clampRangeToMonth();
+      _resetSelection();
       _viewMode = CalendarViewMode.days;
     });
   }
 
-  void _clampRangeToMonth() {
-    final daysInMonth = DateTime(_year, _month + 1, 0).day;
-    if (_confirmedStart != null && _confirmedStart! > daysInMonth) {
-      _confirmedStart = daysInMonth;
-    }
-    if (_confirmedEnd != null && _confirmedEnd! > daysInMonth) {
-      _confirmedEnd = daysInMonth;
-    }
-  }
-
   void _onDayTapped(int day) {
+    if (widget.isSemiCutoff) {
+      final daysInMonth = DateTime(_year, _month + 1, 0).day;
+      final int startDay = day <= 15 ? 1 : 16;
+      final int endDay = day <= 15 ? 15 : daysInMonth;
+
+      setState(() {
+        _confirmedStart = startDay;
+        _confirmedEnd = endDay;
+        _isSelecting = false;
+        _selectStart = null;
+        _candidateEnd = null;
+        _hoveredDay = null;
+      });
+      return;
+    }
+
     setState(() {
       if (!_isSelecting || _selectStart == null) {
         // First tap: start selection
@@ -208,7 +227,7 @@ class _CalendarCutOffState extends State<CalendarCutOff> {
   void _onHover(int day) {
     setState(() {
       _hoveredDay = day;
-      if (_isSelecting) {
+      if (!widget.isSemiCutoff && _isSelecting) {
         _candidateEnd = day;
       }
     });
@@ -217,13 +236,12 @@ class _CalendarCutOffState extends State<CalendarCutOff> {
   void _handlePointerDown(Offset localPos, double gridWidth) {
     final day = _getDayFromPos(localPos, gridWidth);
     if (day != null) {
-      if (!_isSelecting || _selectStart == null) {
-        _onDayTapped(day);
-      }
+      _onDayTapped(day);
     }
   }
 
   void _handlePointerMove(Offset localPos, double gridWidth) {
+    if (widget.isSemiCutoff) return;
     final day = _getDayFromPos(localPos, gridWidth);
     if (day != null && day != _hoveredDay) {
       _onHover(day);
@@ -249,9 +267,20 @@ class _CalendarCutOffState extends State<CalendarCutOff> {
   }
 
   void _applySelection() {
-    final target = _candidateEnd ?? _hoveredDay ?? _confirmedEnd ?? _selectStart ?? 15;
-    final start = min(_selectStart ?? _confirmedStart ?? 1, target);
-    final end = max(_selectStart ?? _confirmedStart ?? 1, target);
+    if (_confirmedStart == null && !_isSelecting) {
+      widget.onClose?.call();
+      return;
+    }
+    final int start;
+    final int end;
+    if (widget.isSemiCutoff) {
+      start = _confirmedStart ?? 1;
+      end = _confirmedEnd ?? 15;
+    } else {
+      final target = _candidateEnd ?? _hoveredDay ?? _confirmedEnd ?? _selectStart ?? 15;
+      start = min(_selectStart ?? _confirmedStart ?? 1, target);
+      end = max(_selectStart ?? _confirmedStart ?? 1, target);
+    }
 
     setState(() {
       _confirmedStart = start;
@@ -673,59 +702,63 @@ class _CalendarCutOffState extends State<CalendarCutOff> {
                 },
               ),
 
-              const SizedBox(height: 8),
-              const Divider(height: 1, color: Color(0xFFEEEEEE)),
-              const SizedBox(height: 6),
+              if (widget.showBottomBar) ...[
+                const SizedBox(height: 8),
+                const Divider(height: 1, color: Color(0xFFEEEEEE)),
+                const SizedBox(height: 6),
 
-              // Bottom action bar: Range preview + Cancel & Apply
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      _isSelecting
-                          ? '${_monthNames[_month - 1]} ${_selectStart ?? 1} – ${_candidateEnd ?? _hoveredDay ?? _selectStart ?? 15}'
-                          : '${_monthNames[_month - 1]} ${_confirmedStart ?? 1} – ${_confirmedEnd ?? 15}',
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: _isSelecting ? const Color(0xFF0F766E) : const Color(0xFF334155),
-                      ),
-                    ),
-                  ),
-                  InkWell(
-                    onTap: _cancelSelection,
-                    borderRadius: BorderRadius.circular(4),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                // Bottom action bar: Range preview + Cancel & Apply
+                Row(
+                  children: [
+                    Expanded(
                       child: Text(
-                        'Cancel',
-                        style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  InkWell(
-                    onTap: _applySelection,
-                    borderRadius: BorderRadius.circular(4),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: _circleColor,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Text(
-                        'Apply',
+                        _isSelecting
+                            ? '${_monthNames[_month - 1]} ${_selectStart ?? 1} – ${_candidateEnd ?? _hoveredDay ?? _selectStart ?? 15}'
+                            : (_confirmedStart != null && _confirmedEnd != null)
+                                ? '${_monthNames[_month - 1]} $_confirmedStart – $_confirmedEnd'
+                                : '',
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: _isSelecting ? const Color(0xFF0F766E) : const Color(0xFF334155),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                    InkWell(
+                      onTap: _cancelSelection,
+                      borderRadius: BorderRadius.circular(4),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    InkWell(
+                      onTap: _applySelection,
+                      borderRadius: BorderRadius.circular(4),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _circleColor,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'Apply',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ],
           ],
         ),
@@ -982,14 +1015,14 @@ class _CalendarCutOffState extends State<CalendarCutOff> {
           ),
         ),
       );
-    } else if (isToday && !inSolidRange) {
-      // Current day ring outline
+    } else if (isToday && !isSolidStart && !isSolidEnd) {
+      // Current day ring outline (black circle like pic 1)
       foreground = Container(
         width: 28,
         height: 28,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: const Color(0xFF757575), width: 1),
+          border: Border.all(color: const Color(0xFF212121), width: 1),
         ),
         alignment: Alignment.center,
         child: Text(

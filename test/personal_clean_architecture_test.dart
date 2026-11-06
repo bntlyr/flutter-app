@@ -6,6 +6,7 @@ import 'package:flutter_app/features/personal/domain/usecases/get_personal_profi
 import 'package:flutter_app/features/personal/domain/usecases/get_personal_schedule.dart';
 import 'package:flutter_app/features/personal/presentation/viewmodels/personal_viewmodel.dart';
 import 'package:flutter_app/features/personal/presentation/viewmodels/personal_schedule_viewmodel.dart';
+import 'package:flutter_app/features/personal/data/models/personal_model.dart';
 import 'package:flutter_app/shared/models/profile_model.dart';
 
 class _MockPersonalRepository implements PersonalRepository {
@@ -99,6 +100,22 @@ void main() {
       // Nov 16, 2026 is Monday outside active cutoff (16-30)
       final nov16 = viewModel.days.firstWhere((d) => d.date.year == 2026 && d.date.month == 11 && d.date.day == 16);
       expect(nov16.classification, equals(ShiftClassification.otherCutOffs));
+    });
+
+    test('MockProfileData entitlements match web-app structure and labels', () {
+      final entitlements = MockProfileData.profile.entitlements;
+
+      expect(entitlements.length, equals(5));
+      expect(entitlements[0].primaryLabel, equals('Time Sheet Required'));
+      expect(entitlements[0].secondaryLabel, equals('Flexitime'));
+      expect(entitlements[1].primaryLabel, equals('Unworked Regular Holiday Pay'));
+      expect(entitlements[1].secondaryLabel, equals('Unworked Special Holiday Pay'));
+      expect(entitlements[2].primaryLabel, equals('Rest Day Pay'));
+      expect(entitlements[2].secondaryLabel, equals('Holiday Premium Pay'));
+      expect(entitlements[3].primaryLabel, equals('Night Differential Pay'));
+      expect(entitlements[3].secondaryLabel, equals('Overtime Pay'));
+      expect(entitlements[4].primaryLabel, equals('Night Differential Pay'));
+      expect(entitlements[4].secondaryLabel, equals('Overtime Pay'));
     });
   });
 }

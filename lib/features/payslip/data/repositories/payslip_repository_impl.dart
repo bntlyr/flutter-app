@@ -5,10 +5,17 @@ import '../datasources/payslip_remote_datasource.dart';
 class PayslipRepositoryImpl implements PayslipRepository {
   final PayslipRemoteDataSource remoteDataSource;
 
-  const PayslipRepositoryImpl({required this.remoteDataSource});
+  const PayslipRepositoryImpl({
+    PayslipRemoteDataSource? remoteDataSource,
+  }) : remoteDataSource = remoteDataSource ?? const PayslipRemoteDataSourceImpl();
 
   @override
-  Future<PayslipEntity> getPayslip(String cutoff) {
-    return remoteDataSource.fetchPayslip(cutoff);
+  Future<PayslipEntity> getPayslip({String? cutoffId, String? cutoffText}) {
+    return remoteDataSource.fetchPayslip(cutoffId: cutoffId, cutoffText: cutoffText);
+  }
+
+  @override
+  Future<List<CutoffOptionEntity>> getCutoffs() {
+    return remoteDataSource.fetchCutoffs();
   }
 }

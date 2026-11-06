@@ -86,10 +86,8 @@ void main() {
       await tester.tap(find.text('Oct-16-2026 – Oct-31-2026'));
       await tester.pumpAndSettle();
 
-      // In CalendarCutOff picker, select Day 1 to Day 15
+      // In CalendarCutOff picker, tap Day 1 to select semi-cutoff Oct-01 to Oct-15
       await tester.tap(find.text('1').last);
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('15').last);
       await tester.pumpAndSettle();
       await tester.tap(find.text('Apply'));
       await tester.pumpAndSettle();
